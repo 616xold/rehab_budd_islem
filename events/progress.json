@@ -1,0 +1,22 @@
+{
+  "session": {
+    "new": false,
+    "sessionId": "amzn1.echo-api.session.200",
+    "application": { "applicationId": "amzn1.ask.skill.test" },
+    "user": { "userId": "testUser" }
+  },
+  "context": {
+    "System": {
+      "application": { "applicationId": "amzn1.ask.skill.test" },
+      "user": { "userId": "testUser" },
+      "device": {},
+      "apiEndpoint": "https://api.amazonalexa.com"
+    }
+  },
+  "request": {
+    "type": "IntentRequest",
+    "requestId": "EdwRequestId.104",
+    "intent": { "name": "CheckProgressIntent" }
+  },
+  "version": "1.0"
+}

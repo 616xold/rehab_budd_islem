@@ -1,0 +1,21 @@
+{
+  "session": {
+    "new": true,
+    "sessionId": "amzn1.echo-api.session.123",
+    "user": { "userId": "testUser" },
+    "application": { "applicationId": "amzn1.ask.skill.test" }
+  },
+  "context": {
+    "System": {
+      "application": { "applicationId": "amzn1.ask.skill.test" },
+      "user": { "userId": "testUser" },
+      "device": {},
+      "apiEndpoint": ""
+    }
+  },
+  "request": {
+    "type": "LaunchRequest",
+    "requestId": "EdwRequestId.123"
+  },
+  "version": "1.0"
+}

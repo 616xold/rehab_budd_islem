@@ -1,0 +1,38 @@
+{
+  "session": {
+    "new": false,
+    "sessionId": "amzn1.echo-api.session.123",
+    "application": {
+      "applicationId": "amzn1.ask.skill.test"
+    },
+    "user": {
+      "userId": "testUser"
+    }
+  },
+  "context": {
+    "System": {
+      "application": {
+        "applicationId": "amzn1.ask.skill.test"
+      },
+      "user": {
+        "userId": "testUser"
+      },
+      "device": {},
+      "apiEndpoint": "https://api.amazonalexa.com"
+    }
+  },
+  "request": {
+    "type": "IntentRequest",
+    "requestId": "amzn1.echo-api.request.456",
+    "intent": {
+      "name": "StartSessionIntent",
+      "slots": {
+        "RoutineType": {
+          "name": "RoutineType",
+          "value": "beginner"
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

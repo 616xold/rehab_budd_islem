@@ -1,0 +1,34 @@
+{
+  "session": {
+    "new": false,
+    "sessionId": "amzn1.echo-api.session.123",
+    "application": { "applicationId": "amzn1.ask.skill.test" },
+    "user": {
+      "userId": "testUser",
+      "permissions": {
+        "scopes": {
+          "alexa::alerts:reminders:skill:readwrite": { "status": "GRANTED" }
+        }
+      }
+    }
+  },
+  "context": {
+    "System": {
+      "application": { "applicationId": "amzn1.ask.skill.test" },
+      "user": { "userId": "testUser" },
+      "device": {},
+      "apiEndpoint": "https://api.amazonalexa.com"
+    }
+  },
+  "request": {
+    "type": "IntentRequest",
+    "requestId": "EdwRequestId.107",
+    "intent": {
+      "name": "SetReminderIntent",
+      "slots": {
+        "ReminderTime": { "name": "ReminderTime", "value": "10:00" }
+      }
+    }
+  },
+  "version": "1.0"
+}

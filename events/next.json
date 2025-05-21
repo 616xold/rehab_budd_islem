@@ -1,0 +1,33 @@
+{
+  "session": {
+    "new": false,
+    "sessionId": "amzn1.echo-api.session.123",
+    "application": { "applicationId": "amzn1.ask.skill.test" },
+    "user": { "userId": "testUser" },
+    "attributes": {
+      "session_state": {
+        "user_id": "testUser",
+        "routine_type": "beginner",
+        "current_index": 0,
+        "exercise_ids": ["ul_b_1","ul_b_2","ll_b_1","m_b_1","c_b_1"],
+        "start_time": "2025-04-25T23:03:04.111790",
+        "completed": false,
+        "last_action_time": "2025-04-25T23:03:04.111790"
+      }
+    }
+  },
+  "context": {
+    "System": {
+      "application": { "applicationId": "amzn1.ask.skill.test" },
+      "user": { "userId": "testUser" },
+      "device": {},
+      "apiEndpoint": "https://api.amazonalexa.com"
+    }
+  },
+  "request": {
+    "type": "IntentRequest",
+    "requestId": "EdwRequestId.101",
+    "intent": { "name": "NextStepIntent" }
+  },
+  "version": "1.0"
+}
