@@ -73,11 +73,18 @@ class LaunchRequestHandler(AbstractRequestHandler):
 
         return handler_input.response_builder.speak(speech_text).ask(speech_text).response
 
-class StartSessionIntentHandler(AbstractRequestHandler):
+class StartRehabSessionIntentHandler(AbstractRequestHandler):
+    """Handler for StartRehabSessionIntent
+
+    This handler replaces the previous StartSessionIntentHandler to match the
+    intent name in the interaction model (StartRehabSessionIntent).
+    """
     def can_handle(self, handler_input):
-        return is_intent_name("StartSessionIntent")(handler_input)
+        # Updated to match the intent name in the interaction model
+        return is_intent_name("StartRehabSessionIntent")(handler_input)
 
     def handle(self, handler_input):
+        # Logic moved from the old StartSessionIntentHandler
         user_id = handler_input.request_envelope.session.user.user_id
         try:
             slots = handler_input.request_envelope.request.intent.slots
@@ -106,18 +113,58 @@ class NextStepIntentHandler(AbstractRequestHandler):
                 "Say 'next step' when you're ready to continue, or 'repeat' to hear that again."
             ).response
 
-class RepeatIntentHandler(AbstractRequestHandler):
+class RepeatStepIntentHandler(AbstractRequestHandler):
+    """Handler for RepeatStepIntent
+
+    This handler replaces the previous RepeatIntentHandler to match the
+    intent name in the interaction model (RepeatStepIntent).
+    """
     def can_handle(self, handler_input):
-        return (is_intent_name("AMAZON.RepeatIntent")(handler_input) or
-                is_intent_name("RepeatIntent")(handler_input))
+        # Updated to match the intent name in the interaction model
+        return is_intent_name("RepeatStepIntent")(handler_input)
 
     def handle(self, handler_input):
+        # Calls the existing repeat_exercise() helper function
         speech_text, should_end_session = repeat_exercise(handler_input)
 
         if should_end_session:
             return handler_input.response_builder.speak(speech_text).set_should_end_session(True).response
         else:
             return handler_input.response_builder.speak(speech_text).ask("Say 'next step' when you're ready to continue.").response
+
+class YesIntentHandler(AbstractRequestHandler):
+    """Handler for AMAZON.YesIntent
+
+    This is a new handler to properly handle when users respond "yes"
+    to prompts, particularly after the welcome message.
+    """
+    def can_handle(self, handler_input):
+        return is_intent_name("AMAZON.YesIntent")(handler_input)
+
+    def handle(self, handler_input):
+        # When user says "yes", we start a rehab session
+        user_id = handler_input.request_envelope.session.user.user_id
+        # Default to beginner routine
+        speech_text, should_end_session = start_session(handler_input, user_id, 'beginner')
+
+        if should_end_session:
+            return handler_input.response_builder.speak(speech_text).set_should_end_session(True).response
+        else:
+            return handler_input.response_builder.speak(speech_text).ask("Say 'next step' when you're ready to continue.").response
+
+class NoIntentHandler(AbstractRequestHandler):
+    """Handler for AMAZON.NoIntent
+
+    This is a new handler to properly handle when users respond "no"
+    to prompts, particularly after the welcome message.
+    """
+    def can_handle(self, handler_input):
+        return is_intent_name("AMAZON.NoIntent")(handler_input)
+
+    def handle(self, handler_input):
+        # When user says "no", we provide a farewell message and end the session
+        speech_text = "Okay, no problem. Remember that regular rehabilitation exercises are important for your recovery. You can start a session anytime by saying 'Alexa, open Rehab Buddy'. Goodbye!"
+        return handler_input.response_builder.speak(speech_text).set_should_end_session(True).response
 
 class SetReminderIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
@@ -169,7 +216,6 @@ class CancelReminderIntentHandler(AbstractRequestHandler):
 
         return handler_input.response_builder.speak(speech_text).response
 
-# --- MISSING FROM FILE 2: EncouragementIntentHandler ---
 class EncouragementIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
         return is_intent_name("EncouragementIntent")(handler_input)
@@ -267,12 +313,14 @@ class CatchAllExceptionHandler(AbstractExceptionHandler):
 
 # ===== Register Handlers ===== #
 sb.add_request_handler(LaunchRequestHandler())
-sb.add_request_handler(StartSessionIntentHandler())
+sb.add_request_handler(StartRehabSessionIntentHandler())  # Updated handler registration
 sb.add_request_handler(NextStepIntentHandler())
-sb.add_request_handler(RepeatIntentHandler())
+sb.add_request_handler(RepeatStepIntentHandler())  # Updated handler registration
+sb.add_request_handler(YesIntentHandler())  # New handler registration
+sb.add_request_handler(NoIntentHandler())  # New handler registration
 sb.add_request_handler(SetReminderIntentHandler())
 sb.add_request_handler(CancelReminderIntentHandler())
-sb.add_request_handler(EncouragementIntentHandler())  # Added missing intent
+sb.add_request_handler(EncouragementIntentHandler())
 sb.add_request_handler(CheckProgressIntentHandler())
 sb.add_request_handler(SessionSummaryIntentHandler())
 sb.add_request_handler(HelpIntentHandler())
@@ -281,6 +329,4 @@ sb.add_request_handler(SessionEndedRequestHandler())
 sb.add_request_handler(FallbackIntentHandler())
 sb.add_exception_handler(CatchAllExceptionHandler())
 
-def lambda_handler(event, context):
-    """AWS Lambda handler."""
-    return sb.lambda_handler()(event, context)
+lambda_handler = sb.lambda_handler()
