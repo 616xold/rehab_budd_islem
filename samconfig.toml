@@ -1,0 +1,10 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "rehab-buddy-stack"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-XXXXX"  # This will be auto-created
+s3_prefix = "rehab-buddy-stack"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"

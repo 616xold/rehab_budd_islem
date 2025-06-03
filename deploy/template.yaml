@@ -1,0 +1,23 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  RehabBuddyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: RehabBuddySkillFunction-New
+      CodeUri: ./
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.11
+      Timeout: 8
+      MemorySize: 128
+      Environment:
+        Variables:
+          DYNAMODB_TABLE_NAME: RehabBuddyUserData
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: RehabBuddyUserData
+      Events:
+        AlexaSkill:
+          Type: AlexaSkill
+          Properties:
+            SkillId: amzn1.ask.skill.d87d6b75-7711-4373-b5e0-21f4a7244762

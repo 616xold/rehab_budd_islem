@@ -1,0 +1,258 @@
+{
+    "interactionModel": {
+      "languageModel": {
+        "invocationName": "rehab buddy",
+        "intents": [
+          {
+            "name": "AMAZON.CancelIntent",
+            "samples": []
+          },
+          {
+            "name": "AMAZON.HelpIntent",
+            "samples": []
+          },
+          {
+            "name": "AMAZON.StopIntent",
+            "samples": []
+          },
+          {
+            "name": "AMAZON.YesIntent",
+            "samples": []
+          },
+          {
+            "name": "AMAZON.NoIntent",
+            "samples": []
+          },
+          {
+            "name": "AMAZON.FallbackIntent",
+            "samples": []
+          },
+          {
+            "name": "StartSessionIntent",
+            "slots": [
+              {
+                "name": "exerciseType",
+                "type": "ExerciseType"
+              }
+            ],
+            "samples": [
+              "begin my {exerciseType} rehab session",
+              "start my {exerciseType} therapy",
+              "I want to do {exerciseType} exercises",
+              "let's do {exerciseType} training",
+              "help me with {exerciseType} rehabilitation",
+              "start a {exerciseType} session",
+              "begin {exerciseType} exercises"
+            ]
+          },
+          {
+            "name": "StartPhysicalTherapyIntent",
+            "slots": [],
+            "samples": [
+              "begin my rehab session",
+              "start my physical therapy exercises",
+              "I want to do mobility training",
+              "let's do walking practice",
+              "help me with my balance exercises",
+              "start physical therapy",
+              "begin physical exercises",
+              "start mobility training",
+              "help me with physical rehabilitation"
+            ]
+          },
+          {
+            "name": "StartSpeechTherapyIntent",
+            "slots": [],
+            "samples": [
+              "I want to practice speaking",
+              "start a speech therapy session",
+              "help me with speech exercises",
+              "let's do speech rehab now",
+              "begin speech therapy",
+              "start speech exercises",
+              "help me with my speech",
+              "I need to practice talking"
+            ]
+          },
+          {
+            "name": "StartCognitiveExerciseIntent",
+            "slots": [],
+            "samples": [
+              "help me with a brain exercise",
+              "start cognitive training",
+              "I want to do a memory exercise",
+              "begin cognitive exercises",
+              "start brain training",
+              "help me with thinking exercises",
+              "let's do mental exercises"
+            ]
+          },
+          {
+            "name": "NextExerciseIntent",
+            "slots": [],
+            "samples": [
+              "next exercise",
+              "I'm ready for the next one",
+              "go to the next step",
+              "what's next",
+              "continue",
+              "move on",
+              "next",
+              "proceed to next exercise"
+            ]
+          },
+          {
+            "name": "RepeatExerciseIntent",
+            "slots": [],
+            "samples": [
+              "repeat that",
+              "say that again",
+              "please repeat the instructions",
+              "I didn't catch that step",
+              "can you repeat that",
+              "what was that again",
+              "repeat the exercise"
+            ]
+          },
+          {
+            "name": "SkipExerciseIntent",
+            "slots": [],
+            "samples": [
+              "skip this exercise",
+              "I can't do this one",
+              "skip to the next",
+              "move past this exercise",
+              "skip this one",
+              "go to the next exercise",
+              "I want to skip"
+            ]
+          },
+          {
+            "name": "AdjustDifficultyIntent",
+            "slots": [
+              {
+                "name": "direction",
+                "type": "AMAZON.SearchQuery"
+              }
+            ],
+            "samples": [
+              "make it {direction}",
+              "this is too {direction} for me",
+              "give me something {direction}",
+              "I need more of a {direction}",
+              "make the exercises {direction}",
+              "I want it to be {direction}",
+              "adjust difficulty to be {direction}"
+            ]
+          },
+          {
+            "name": "EncouragementIntent",
+            "slots": [],
+            "samples": [
+              "I need encouragement",
+              "say something motivating",
+              "give me a motivational quote",
+              "cheer me up",
+              "motivate me",
+              "I need motivation",
+              "encourage me"
+            ]
+          },
+          {
+            "name": "CheckProgressIntent",
+            "slots": [],
+            "samples": [
+              "how am I doing",
+              "check my rehab progress",
+              "am I improving",
+              "what's my exercise record",
+              "show my progress",
+              "how many sessions have I completed",
+              "what's my streak"
+            ]
+          },
+          {
+            "name": "SetRehabReminderIntent",
+            "slots": [
+              {
+                "name": "ReminderTime",
+                "type": "AMAZON.TIME"
+              }
+            ],
+            "samples": [
+              "remind me to do my exercises every day at {ReminderTime}",
+              "set a daily rehab reminder for {ReminderTime}",
+              "schedule my rehab reminder for weekdays at {ReminderTime}",
+              "set a reminder for {ReminderTime}",
+              "remind me at {ReminderTime}",
+              "create a reminder for {ReminderTime}"
+            ]
+          },
+          {
+            "name": "CancelRehabReminderIntent",
+            "slots": [],
+            "samples": [
+              "cancel my exercise reminder",
+              "remove the daily rehab alarm",
+              "stop all rehab reminders",
+              "delete my reminders",
+              "turn off exercise reminders",
+              "cancel reminders"
+            ]
+          },
+          {
+            "name": "SessionSummaryIntent",
+            "slots": [],
+            "samples": [
+              "give me a summary",
+              "summarize my session",
+              "where am I in my session",
+              "session summary",
+              "what's my progress in this session"
+            ]
+          }
+        ],
+        "types": [
+          {
+            "name": "ExerciseType",
+            "values": [
+              {
+                "name": {
+                  "value": "physical",
+                  "synonyms": [
+                    "physical therapy",
+                    "mobility",
+                    "movement",
+                    "motor"
+                  ]
+                }
+              },
+              {
+                "name": {
+                  "value": "speech",
+                  "synonyms": [
+                    "speech therapy",
+                    "talking",
+                    "verbal",
+                    "voice"
+                  ]
+                }
+              },
+              {
+                "name": {
+                  "value": "cognitive",
+                  "synonyms": [
+                    "brain",
+                    "thinking",
+                    "memory",
+                    "mental"
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+  

@@ -1,9 +1,11 @@
-# util/invoke.py
-import sys, json
-import lambda_function as lf
+# invoke.py
+import json
+from lambda_function import lambda_handler
 
-with open(sys.argv[1]) as f:
+# Adjust this path if your file is named differently or in another folder:
+with open("events/launch_event.json", "r") as f:
     event = json.load(f)
 
-response = lf.lambda_handler(event, None)
+# Call your handler; context can be None for local tests
+response = lambda_handler(event, None)
 print(json.dumps(response, indent=2))
