@@ -563,12 +563,6 @@ class SetRehabReminderIntentHandler(AbstractRequestHandler):
             speech_text = "I had trouble setting your reminder. Please try again later."
             return handler_input.response_builder.speak(speech_text).ask(speech_text).response
 
-# --- Helper function for simulator detection ---------------
-def is_running_in_simulator(handler_input):
-    device_id = handler_input.request_envelope.context.system.device.device_id
-    return device_id.startswith("simulator")
-# ------------------------------------------------------------------
-
 class CancelRemindersIntentHandler(AbstractRequestHandler):
     """Handle every cancel-reminder intent name we've ever used."""
     def can_handle(self, handler_input):
@@ -616,6 +610,62 @@ class CancelRemindersIntentHandler(AbstractRequestHandler):
         session["awaiting_cancel_confirm"] = True
         confirm = "Are you sure you want to cancel all of your rehabilitation exercise reminders?"
         return handler_input.response_builder.speak(confirm).ask(confirm).response
+
+class ListRemindersIntentHandler(AbstractRequestHandler):
+    """Handle every list-reminders intent name we've ever used."""
+    def can_handle(self, handler_input):
+        return (
+            is_intent_name("ListRemindersIntent")(handler_input)  or  # current US model
+            is_intent_name("ListReminderIntent")(handler_input)       # singular (seen in UK fallback)
+        )
+
+    def handle(self, handler_input):
+        # Check if running in simulator
+        if is_running_in_simulator(handler_input):
+            speech_text = "In the simulator, I can't actually list reminders, but I can show you what would happen. I would normally list all your scheduled rehabilitation exercise reminders."
+            return handler_input.response_builder.speak(speech_text).ask("Would you like to continue with your session?").response
+        
+        # Check if we have permission to manage reminders
+        if not has_reminders_permission(handler_input):
+            return build_permissions_response(handler_input)
+        
+        try:
+            # Get all reminders
+            success, reminders = get_all_reminders(handler_input)
+            
+            if success:
+                if not reminders or len(reminders) == 0:
+                    speech_text = "You don't have any rehabilitation exercise reminders scheduled."
+                else:
+                    # Format the reminders list
+                    reminder_list = []
+                    for reminder in reminders:
+                        time_str = reminder.get('trigger', {}).get('scheduledTime', '')
+                        if time_str:
+                            try:
+                                # Parse the time and format it nicely
+                                reminder_time = datetime.datetime.fromisoformat(time_str.replace('Z', '+00:00'))
+                                time_str = reminder_time.strftime('%I:%M %p')
+                            except:
+                                pass
+                        reminder_list.append(f"at {time_str}")
+                    
+                    if len(reminder_list) == 1:
+                        speech_text = f"You have a reminder scheduled {reminder_list[0]}."
+                    else:
+                        speech_text = f"You have reminders scheduled {', '.join(reminder_list[:-1])}, and {reminder_list[-1]}."
+            else:
+                if reminders == "permission_required":
+                    speech_text = "I don't have permission to manage reminders. Please enable reminders in the Alexa app."
+                else:
+                    speech_text = "I had trouble getting your reminders. Please try again later."
+            
+            return handler_input.response_builder.speak(speech_text).ask(speech_text).response
+            
+        except Exception as e:
+            logger.error(f"Error listing reminders: {str(e)}")
+            speech_text = "I had trouble getting your reminders. Please try again later."
+            return handler_input.response_builder.speak(speech_text).ask(speech_text).response
 
 class GetProgressIntentHandler(AbstractRequestHandler):
     """Handler for GetProgressIntent"""
@@ -793,62 +843,6 @@ class SessionEndedRequestHandler(AbstractRequestHandler):
         # We can't send a response here, so just return an empty one
         return handler_input.response_builder.response
 
-class ListRemindersIntentHandler(AbstractRequestHandler):
-    """Handle every list-reminders intent name we've ever used."""
-    def can_handle(self, handler_input):
-        return (
-            is_intent_name("ListRemindersIntent")(handler_input) or       # plural
-            is_intent_name("ListReminderIntent")(handler_input)           # singular
-        )
-
-    def handle(self, handler_input):
-        # Check if running in simulator
-        if is_running_in_simulator(handler_input):
-            speech_text = "In the simulator, I can't actually list reminders, but I can show you what would happen. I would normally list all your scheduled rehabilitation exercise reminders."
-            return handler_input.response_builder.speak(speech_text).ask("Would you like to continue with your session?").response
-        
-        # Check if we have permission to manage reminders
-        if not has_reminders_permission(handler_input):
-            return build_permissions_response(handler_input)
-        
-        try:
-            # Get all reminders
-            success, reminders = get_all_reminders(handler_input)
-            
-            if success:
-                if not reminders or len(reminders) == 0:
-                    speech_text = "You don't have any rehabilitation exercise reminders scheduled."
-                else:
-                    # Format the reminders list
-                    reminder_list = []
-                    for reminder in reminders:
-                        time_str = reminder.get('trigger', {}).get('scheduledTime', '')
-                        if time_str:
-                            try:
-                                # Parse the time and format it nicely
-                                reminder_time = datetime.datetime.fromisoformat(time_str.replace('Z', '+00:00'))
-                                time_str = reminder_time.strftime('%I:%M %p')
-                            except:
-                                pass
-                        reminder_list.append(f"at {time_str}")
-                    
-                    if len(reminder_list) == 1:
-                        speech_text = f"You have a reminder scheduled {reminder_list[0]}."
-                    else:
-                        speech_text = f"You have reminders scheduled {', '.join(reminder_list[:-1])}, and {reminder_list[-1]}."
-            else:
-                if reminders == "permission_required":
-                    speech_text = "I don't have permission to manage reminders. Please enable reminders in the Alexa app."
-                else:
-                    speech_text = "I had trouble getting your reminders. Please try again later."
-            
-            return handler_input.response_builder.speak(speech_text).ask(speech_text).response
-            
-        except Exception as e:
-            logger.error(f"Error listing reminders: {str(e)}")
-            speech_text = "I had trouble getting your reminders. Please try again later."
-            return handler_input.response_builder.speak(speech_text).ask(speech_text).response
-
 # ===== EXCEPTION HANDLERS ===== #
 
 class CatchAllExceptionHandler(AbstractExceptionHandler):
@@ -886,10 +880,15 @@ sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(CancelOrStopIntentHandler())
 sb.add_request_handler(FallbackIntentHandler())
 sb.add_request_handler(SessionEndedRequestHandler())
-sb.add_request_handler(ListRemindersIntentHandler())
 
 # Register exception handlers
 sb.add_exception_handler(CatchAllExceptionHandler())
 
 # Lambda handler
 lambda_handler = sb.lambda_handler()
+
+# --- Helper function for simulator detection ---------------
+def is_running_in_simulator(handler_input):
+    device_id = handler_input.request_envelope.context.system.device.device_id
+    return device_id.startswith("simulator")
+# ------------------------------------------------------------------

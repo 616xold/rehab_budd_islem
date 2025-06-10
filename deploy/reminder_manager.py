@@ -87,7 +87,7 @@ def retry_with_backoff(max_retries=3, base_delay=1):
                     if attempt == max_retries - 1:
                         raise
                     delay = base_delay * (2 ** attempt)
-                    print(f"Retry attempt {attempt + 1} after {delay}s delay. Error: {str(e)}")
+                    logger.info(f"Retry attempt {attempt + 1} after {delay}s delay. Error: {str(e)}")
                     time.sleep(delay)
             return None
         return wrapper
@@ -385,6 +385,7 @@ def schedule_daily_reminder(handler_input, reminder_time, reminder_text, timezon
         logger.error(f"Unexpected error in schedule_daily_reminder: {str(e)}")
         return False, "unexpected_error"
 
+@retry_with_backoff(max_retries=3)
 def cancel_reminder(handler_input, reminder_id: str) -> Tuple[bool, str]:
     """
     Cancel a specific reminder.
@@ -430,6 +431,7 @@ def cancel_reminder(handler_input, reminder_id: str) -> Tuple[bool, str]:
         logger.error(f"Error cancelling reminder: {str(e)}")
         return False, str(e)
 
+@retry_with_backoff(max_retries=3)
 def get_all_reminders(handler_input) -> Tuple[bool, Any]:
     """
     Get all reminders for the user.
@@ -465,8 +467,7 @@ def get_all_reminders(handler_input) -> Tuple[bool, Any]:
         
         # Check response
         if response.status_code == 200:
-            reminders = response.json().get('alerts', [])
-            return True, reminders
+            return True, response.json()
         else:
             logger.error(f"Error getting reminders: {response.status_code} - {response.text}")
             return False, f"Error {response.status_code}: {response.text}"
@@ -475,6 +476,7 @@ def get_all_reminders(handler_input) -> Tuple[bool, Any]:
         logger.error(f"Error getting reminders: {str(e)}")
         return False, str(e)
 
+@retry_with_backoff(max_retries=3)
 def cancel_all_reminders(handler_input, user_id: str | None = None) -> Tuple[bool, str]:
     """
     Cancel all reminders for the user.
@@ -488,68 +490,46 @@ def cancel_all_reminders(handler_input, user_id: str | None = None) -> Tuple[boo
     if user_id is None:
         user_id = handler_input.request_envelope.session.user.user_id
 
-    # Get all reminders
-    success, reminders = get_all_reminders(handler_input)
+    # Check for permission
+    if not has_reminders_permission(handler_input):
+        return False, "no_permission"
     
-    if not success:
-        if reminders == "no_permission":
-            return False, "no_permission"
-        return False, f"Failed to get reminders: {reminders}"
+    try:
+        # Get all reminders
+        success, reminders_data = get_all_reminders(handler_input)
+        
+        if not success:
+            return False, reminders_data
+        
+        # Cancel each reminder
+        for reminder in reminders_data.get('alerts', []):
+            reminder_id = reminder.get('alertToken')
+            if reminder_id:
+                cancel_reminder(handler_input, reminder_id)
+        
+        # Clear reminder preferences
+        store_reminder_preference(user_id, {})
+        
+        return True, "All reminders cancelled successfully"
     
-    # No reminders to cancel
-    if not reminders:
-        return True, "No reminders to cancel"
-    
-    # Cancel each reminder
-    cancelled_count = 0
-    for reminder in reminders:
-        reminder_id = reminder.get('alertToken')
-        if reminder_id:
-            success, _ = cancel_reminder(handler_input, reminder_id)
-            if success:
-                cancelled_count += 1
-    
-    return True, f"Cancelled {cancelled_count} reminders"
+    except Exception as e:
+        logger.error(f"Error cancelling all reminders: {str(e)}")
+        return False, str(e)
 
 def build_permissions_response(handler_input) -> Dict[str, Any]:
     """
-    Build a response that prompts the user to grant reminders permission.
+    Build a response requesting reminders permission.
     
     Args:
         handler_input: The Alexa handler input object
         
     Returns:
-        Dict[str, Any]: Response object with permissions card
+        Dict[str, Any]: Response dictionary
     """
-    try:
-        # Import response builder from ASK SDK
-        from ask_sdk_model.ui import AskForPermissionsConsentCard
-        
-        # Create speech output
-        speech = "To set reminders for your rehabilitation sessions, I need permission to use the Alexa Reminders feature. I've sent a card to your Alexa app where you can grant this permission."
-        
-        # Create permissions card
-        permissions_card = AskForPermissionsConsentCard(
-            permissions=["alexa::alerts:reminders:skill:readwrite"]
-        )
-        
-        # Build response
-        return handler_input.response_builder.speak(speech)\
-            .set_card(permissions_card)\
-            .response
+    speech_text = (
+        "To set reminders for your rehabilitation exercises, I'll need permission "
+        "to access the Alexa Reminders API. You can grant this permission in the "
+        "Alexa app under Settings > Your Skills > Rehab Buddy."
+    )
     
-    except ImportError:
-        # If ASK SDK is not available, return a dictionary for the response
-        return {
-            "response": {
-                "outputSpeech": {
-                    "type": "PlainText",
-                    "text": "To set reminders for your rehabilitation sessions, I need permission to use the Alexa Reminders feature. I've sent a card to your Alexa app where you can grant this permission."
-                },
-                "card": {
-                    "type": "AskForPermissionsConsent",
-                    "permissions": ["alexa::alerts:reminders:skill:readwrite"]
-                },
-                "shouldEndSession": True
-            }
-        }
+    return handler_input.response_builder.speak(speech_text).ask(speech_text).response

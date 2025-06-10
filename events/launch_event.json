@@ -1,0 +1,36 @@
+{
+    "version": "1.0",
+    "session": {
+      "new": true,
+      "sessionId": "amzn1.echo-api.session.test-1234",
+      "application": {
+        "applicationId": "amzn1.ask.skill.d87d6b75-7711-4373-b5e0-21f4a7244762"
+      },
+      "attributes": {},
+      "user": {
+        "userId": "amzn1.ask.account.AMA62ED5RUR3I3JU7J6WIY4U4CANQDCYK6REOH7KS3RO33QJK7XDWHNHEXJ535PQSNKAQDNWSS22GVPH5A73BKWSNX2N7CK6OTLJTUPKSXJCLSYC2MPQPFRZEPOJQYM2XZPZDBKG7ZC5EEID6FJXD7VMH6LPFFDUV6M5ROHDS6RLZFHKWQWLNZFRRSPQ4IV4SW4T34E7SZ6ZM34KQC7JIHZD65JZAII44C4ZG3VJQY"
+      }
+    },
+    "context": {
+      "System": {
+        "application": {
+          "applicationId": "amzn1.ask.skill.d87d6b75-7711-4373-b5e0-21f4a7244762"
+        },
+        "user": {
+          "userId": "amzn1.ask.account.AMA62ED5RUR3I3JU7J6WIY4U4CANQDCYK6REOH7KS3RO33QJK7XDWHNHEXJ535PQSNKAQDNWSS22GVPH5A73BKWSNX2N7CK6OTLJTUPKSXJCLSYC2MPQPFRZEPOJQYM2XZPZDBKG7ZC5EEID6FJXD7VMH6LPFFDUV6M5ROHDS6RLZFHKWQWLNZFRRSPQ4IV4SW4T34E7SZ6ZM34KQC7JIHZD65JZAII44C4ZG3VJQY"
+        },
+        "device": {
+          "deviceId": "simulator-device",
+          "supportedInterfaces": {}
+        },
+        "apiEndpoint": "https://api.amazonalexa.com"
+      }
+    },
+    "request": {
+      "type": "LaunchRequest",
+      "requestId": "amzn1.echo-api.request.test-1234",
+      "timestamp": "2025-05-21T12:00:00Z",
+      "locale": "en-US"
+    }
+  }
+  

@@ -1,0 +1,52 @@
+{
+    "manifest": {
+      "apis": {
+        "custom": {
+          "endpoint": {
+            "uri": "arn:aws:lambda:us-east-1:509399614016:function:RehabBuddySkillFunction"
+          },
+          "interfaces": [],
+          "locales": {
+            "en-US": {},   
+            "en-GB": {}   
+          }
+        }
+      },
+      "manifestVersion": "1.0",
+      "permissions": [
+        { "name": "alexa::alerts:reminders:skill:readwrite" },
+        { "name": "alexa::devices:all:settings:read" }
+      ],
+      "publishingInformation": {
+        "category": "KNOWLEDGE_AND_TRIVIA",
+        "isAvailableWorldwide": true,
+        "distributionCountries": [],
+        "testingInstructions": "Sample Testing Instructions.",
+        "locales": {
+          "en-US": {
+            "name": "Rehab Buddy",
+            "summary": "Sample Short Description",
+            "description": "Sample Full Description",
+            "examplePhrases": [
+              "Alexa, open rehab buddy",
+              "hello",
+              "help"
+            ],
+            "keywords": []
+          },
+          "en-GB": {      
+            "name": "Rehab Buddy",
+            "summary": "Sample Short Description",
+            "description": "Sample Full Description",
+            "examplePhrases": [
+              "Alexa, open rehab buddy",
+              "hello",
+              "help"
+            ],
+            "keywords": []
+          }
+        }
+      }
+    }
+  }
+  
