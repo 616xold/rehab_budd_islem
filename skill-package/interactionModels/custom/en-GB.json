@@ -69,6 +69,32 @@
           ]
         },
         {
+          "slots": [],
+          "name": "EncouragementIntent",
+          "samples": [
+            "I need encouragement",
+            "say something motivating",
+            "give me a motivational quote",
+            "cheer me up",
+            "motivate me",
+            "I need motivation",
+            "encourage me"
+          ]
+        },
+        {
+          "slots": [],
+          "name": "CheckProgressIntent",
+          "samples": [
+            "how am I doing",
+            "check my rehab progress",
+            "am I improving",
+            "what's my exercise record",
+            "show my progress",
+            "how many sessions have I completed",
+            "what's my streak"
+          ]
+        },
+        {
           "name": "AMAZON.NavigateHomeIntent",
           "samples": []
         }

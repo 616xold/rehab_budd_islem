@@ -176,9 +176,7 @@ class SessionState:
             bool: True if successfully skipped, False if at the end of the session
         """
         # Record that this exercise was skipped
-        while len(self.skips) <= self.current_index:
-            self.skips.append(False)
-        self.skips[self.current_index] = True
+        self.skips.append(self.exercises[self.current_index].exercise_id)
         
         # Advance to next exercise
         if self.current_index < len(self.exercises) - 1:

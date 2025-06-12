@@ -221,7 +221,13 @@ class NextExerciseIntentHandler(AbstractRequestHandler):
                 is_intent_name("NextStepIntent")(handler_input))  # Support both for backward compatibility
 
     def handle(self, handler_input):
-        speech_text, should_end_session = next_exercise(handler_input)
+        result = next_exercise(handler_input)
+        if result is None:
+            # Graceful recovery
+            speech_text = "I couldn't find an active session. You can start a new one by saying 'start physical therapy'."
+            return handler_input.response_builder.speak(speech_text).ask(speech_text).response
+
+        speech_text, should_end_session = result
 
         if should_end_session:
             return handler_input.response_builder.speak(speech_text).set_should_end_session(True).response
@@ -271,19 +277,8 @@ class AdjustDifficultyIntentHandler(AbstractRequestHandler):
             is_simulator = device_id.startswith("simulator")
             
             # Get the direction (easier or harder)
-            slots = handler_input.request_envelope.request.intent.slots or {}
-            
-            # Log the slots for debugging
-            logger.info(f"AdjustDifficultyIntent slots: {slots}")
-            
-            # Check if direction slot exists
-            if 'direction' in slots:
-                direction = slots.get('direction', {}).get('value', '')
-                logger.info(f"Direction from slot: {direction}")
-            else:
-                # No direction slot found, default to "easier" and log
-                direction = ''
-                logger.info("No direction slot found in request, defaulting to 'easier'")
+            direction_slot = handler_input.request_envelope.request.intent.slots.get("direction")
+            direction = direction_slot.value if (direction_slot and direction_slot.value) else ''
             
             # Default to making it easier if direction is unclear
             make_easier = True
@@ -436,6 +431,18 @@ class DifficultyFeedbackIntentHandler(AbstractRequestHandler):
             
             return handler_input.response_builder.speak(speech_text).ask("Say 'next exercise' when you're ready to continue.").response
 
+class EncouragementIntentHandler(AbstractRequestHandler):
+    """Simple handler that returns a random motivational line."""
+
+    def can_handle(self, handler_input):
+        return is_intent_name("EncouragementIntent")(handler_input)
+
+    def handle(self, handler_input):
+        speech_text = get_random_encouragement()
+        return handler_input.response_builder.speak(speech_text).ask(
+            "Say 'next exercise' when you're ready to continue."
+        ).response
+
 class YesIntentHandler(AbstractRequestHandler):
     """Handler for AMAZON.YesIntent"""
     def can_handle(self, handler_input):
@@ -526,12 +533,16 @@ class SetRehabReminderIntentHandler(AbstractRequestHandler):
         try:
             slots = handler_input.request_envelope.request.intent.slots
             time_slot = slots.get('ReminderTime')
-            
+
             if not time_slot or not time_slot.value:
                 # No time specified, ask for one
                 speech_text = "What time would you like me to remind you about your rehabilitation exercises?"
                 return handler_input.response_builder.speak(speech_text).ask(speech_text).response
-            
+
+            if time_slot.value is None:
+                speech_text = "I didn't catch the time. Please say something like 9 AM or 21:30."
+                return handler_input.response_builder.speak(speech_text).ask(speech_text).response
+
             # Validate time format
             try:
                 hour, minute, second = parse_time_slot(time_slot.value)
@@ -620,7 +631,10 @@ class CancelRemindersIntentHandler(AbstractRequestHandler):
 class GetProgressIntentHandler(AbstractRequestHandler):
     """Handler for GetProgressIntent"""
     def can_handle(self, handler_input):
-        return is_intent_name("GetProgressIntent")(handler_input)
+        return (
+            is_intent_name("GetProgressIntent")(handler_input) or
+            is_intent_name("CheckProgressIntent")(handler_input)
+        )
 
     def handle(self, handler_input):
         user_id = handler_input.request_envelope.session.user.user_id
@@ -806,48 +820,54 @@ class ListRemindersIntentHandler(AbstractRequestHandler):
         if is_running_in_simulator(handler_input):
             speech_text = "In the simulator, I can't actually list reminders, but I can show you what would happen. I would normally list all your scheduled rehabilitation exercise reminders."
             return handler_input.response_builder.speak(speech_text).ask("Would you like to continue with your session?").response
-        
-        # Check if we have permission to manage reminders
+
         if not has_reminders_permission(handler_input):
             return build_permissions_response(handler_input)
-        
-        try:
-            # Get all reminders
-            success, reminders = get_all_reminders(handler_input)
-            
-            if success:
-                if not reminders or len(reminders) == 0:
-                    speech_text = "You don't have any rehabilitation exercise reminders scheduled."
-                else:
-                    # Format the reminders list
-                    reminder_list = []
-                    for reminder in reminders:
-                        time_str = reminder.get('trigger', {}).get('scheduledTime', '')
-                        if time_str:
-                            try:
-                                # Parse the time and format it nicely
-                                reminder_time = datetime.datetime.fromisoformat(time_str.replace('Z', '+00:00'))
-                                time_str = reminder_time.strftime('%I:%M %p')
-                            except:
-                                pass
-                        reminder_list.append(f"at {time_str}")
-                    
-                    if len(reminder_list) == 1:
-                        speech_text = f"You have a reminder scheduled {reminder_list[0]}."
+
+        # Try Dynamo first (fast & always consistent)
+        prefs = get_reminder_preferences(
+            handler_input.request_envelope.session.user.user_id
+        )
+        if prefs:
+            time  = prefs.get("time", "an unknown time")
+            freq  = prefs.get("frequency", "every day").lower()
+            speech_text = f"You have a reminder set for {time} {freq}. "
+        else:
+            # Fallback to live API (rarely needed)
+            try:
+                success, reminders = get_all_reminders(handler_input)
+
+                if success:
+                    if not reminders or len(reminders) == 0:
+                        speech_text = "You don't have any rehabilitation exercise reminders scheduled."
                     else:
-                        speech_text = f"You have reminders scheduled {', '.join(reminder_list[:-1])}, and {reminder_list[-1]}."
-            else:
-                if reminders == "permission_required":
-                    speech_text = "I don't have permission to manage reminders. Please enable reminders in the Alexa app."
+                        # Format the reminders list
+                        reminder_list = []
+                        for reminder in reminders:
+                            time_str = reminder.get('trigger', {}).get('scheduledTime', '')
+                            if time_str:
+                                try:
+                                    reminder_time = datetime.datetime.fromisoformat(time_str.replace('Z', '+00:00'))
+                                    time_str = reminder_time.strftime('%I:%M %p')
+                                except:
+                                    pass
+                            reminder_list.append(f"at {time_str}")
+
+                        if len(reminder_list) == 1:
+                            speech_text = f"You have a reminder scheduled {reminder_list[0]}."
+                        else:
+                            speech_text = f"You have reminders scheduled {', '.join(reminder_list[:-1])}, and {reminder_list[-1]}."
                 else:
-                    speech_text = "I had trouble getting your reminders. Please try again later."
-            
-            return handler_input.response_builder.speak(speech_text).ask(speech_text).response
-            
-        except Exception as e:
-            logger.error(f"Error listing reminders: {str(e)}")
-            speech_text = "I had trouble getting your reminders. Please try again later."
-            return handler_input.response_builder.speak(speech_text).ask(speech_text).response
+                    if reminders == "permission_required":
+                        speech_text = "I don't have permission to manage reminders. Please enable reminders in the Alexa app."
+                    else:
+                        speech_text = "I had trouble getting your reminders. Please try again later."
+            except Exception as e:
+                logger.error(f"Error listing reminders: {str(e)}")
+                speech_text = "I had trouble getting your reminders. Please try again later."
+
+        return handler_input.response_builder.speak(speech_text)\
+            .ask("Would you like anything else?").response
 
 # ===== EXCEPTION HANDLERS ===== #
 
@@ -875,6 +895,7 @@ sb.add_request_handler(RepeatExerciseIntentHandler())
 sb.add_request_handler(SkipExerciseIntentHandler())
 sb.add_request_handler(AdjustDifficultyIntentHandler())
 sb.add_request_handler(DifficultyFeedbackIntentHandler())
+sb.add_request_handler(EncouragementIntentHandler())
 sb.add_request_handler(YesIntentHandler())
 sb.add_request_handler(NoIntentHandler())
 sb.add_request_handler(SetRehabReminderIntentHandler())
