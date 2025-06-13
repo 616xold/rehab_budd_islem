@@ -69,6 +69,27 @@ def parse_time_slot(time_str: str) -> Tuple[int, int, int]:
     
     return hour, minute, second
 
+def validate_time(time_str: str) -> Optional[str]:
+    """Validate a time string and return canonical HH:MM if valid.
+
+    Args:
+        time_str: Time string provided by the user or Alexa slot.
+
+    Returns:
+        ``HH:MM`` formatted string if valid, otherwise ``None``.
+    """
+    try:
+        hour, minute, _ = parse_time_slot(time_str)
+    except Exception as e:
+        logger.error(f"validate_time error parsing '{time_str}': {e}")
+        return None
+
+    if 0 <= hour <= 23 and 0 <= minute <= 59:
+        return f"{hour:02d}:{minute:02d}"
+
+    logger.error(f"validate_time out-of-range: {hour}:{minute}")
+    return None
+
 def retry_with_backoff(max_retries=3, base_delay=1):
     """
     Decorator to retry a function with exponential backoff.

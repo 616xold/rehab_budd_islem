@@ -48,7 +48,7 @@ from reminder_manager import (
     cancel_all_reminders,
     build_permissions_response,
     get_reminder_preferences,
-    parse_time_slot
+    validate_time
 )
 from progress_tracker import (
     get_user_progress,
@@ -577,16 +577,18 @@ class SetRehabReminderIntentHandler(AbstractRequestHandler):
                 return handler_input.response_builder.speak(speech_text).ask(speech_text).response
             
             # Validate time format
-            try:
-                hour, minute, second = parse_time_slot(time_slot.value)
-            except ValueError as e:
-                logger.error(f"Invalid time format: {time_slot.value} - {str(e)}")
-                speech_text = "I couldn't understand that time. Please specify a time like 9 AM or 21:30."
+            reminder_time = validate_time(time_slot.value)
+            if not reminder_time:
+                logger.error(f"Invalid reminder time provided: {time_slot.value}")
+                speech_text = (
+                    "That time doesn't seem valid. Please give an hour between zero and twenty-three "
+                    "and minutes between zero and fifty-nine."
+                )
                 return handler_input.response_builder.speak(speech_text).ask(speech_text).response
-            
+
             # Schedule the reminder
             reminder_text = "Time for your rehabilitation exercises"
-            success, result = schedule_daily_reminder(handler_input, time_slot.value, reminder_text)
+            success, result = schedule_daily_reminder(handler_input, reminder_time, reminder_text)
             
             if success:
                 speech_text = f"I've set a daily reminder for your rehabilitation exercises at {time_slot.value}. Is there anything else you'd like to do?"
