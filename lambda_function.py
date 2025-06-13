@@ -772,10 +772,15 @@ class CancelOrStopIntentHandler(AbstractRequestHandler):
         # Check if we're in a session
         from session_flow import get_session_state
         session_state = get_session_state(handler_input)
-        
+
         if session_state and not session_state.completed:
+            was_complete = session_state.is_complete()
             # End the current session
             speech_text, _ = end_session(handler_input)
+            try:
+                finish_session(session_state.user_id, session_state.exercise_type, completed=was_complete)
+            except Exception as e:
+                logger.error(f"Error logging finished session: {e}")
         else:
             # Just say goodbye
             speech_text = "Goodbye! Remember that regular rehabilitation exercises are important for your recovery."

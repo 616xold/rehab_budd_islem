@@ -181,6 +181,31 @@ def log_session_completion(user_id: str, exercise_type: str = "physical") -> boo
         print(f"Error logging session completion: {str(e)}")
         return False
 
+
+def finish_session(user_id: str, exercise_type: str, completed: bool = True) -> bool:
+    """Finish a rehabilitation session and update counters.
+
+    This is a thin wrapper around :func:`log_session_completion` that allows
+    callers to conditionally update the user's session counters. If
+    ``completed`` is ``False`` the function simply returns ``True`` without
+    touching the counters.  This enables callers such as the Stop intent
+    handler to avoid double counting when a session is ended early.
+
+    Args:
+        user_id: The Alexa user identifier.
+        exercise_type: The type of exercise session.
+        completed: Whether the session was fully completed.
+
+    Returns:
+        bool: ``True`` on success, ``False`` otherwise.
+    """
+
+    if not completed:
+        # Nothing to update if the session wasn't completed.
+        return True
+
+    return log_session_completion(user_id, exercise_type)
+
 def log_partial_session(user_id: str, completed: int, total: int, exercise_type: str = "physical") -> bool:
     """
     Log a partially completed rehabilitation session.
