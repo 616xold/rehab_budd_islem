@@ -38,7 +38,7 @@
             "begin my {exerciseType} rehab session",
             "start my {exerciseType} therapy",
             "I want to do {exerciseType} exercises",
-            "let\u0027s do {exerciseType} training",
+            "let's do {exerciseType} training",
             "help me with {exerciseType} rehabilitation",
             "start a {exerciseType} session",
             "begin {exerciseType} exercises"
@@ -51,7 +51,7 @@
             "begin my rehab session",
             "start my physical therapy exercises",
             "I want to do mobility training",
-            "let\u0027s do walking practice",
+            "let's do walking practice",
             "help me with my balance exercises",
             "start physical therapy",
             "begin physical exercises",
@@ -66,7 +66,7 @@
             "I want to practice speaking",
             "start a speech therapy session",
             "help me with speech exercises",
-            "let\u0027s do speech rehab now",
+            "let's do speech rehab now",
             "begin speech therapy",
             "start speech exercises",
             "help me with my speech",
@@ -83,7 +83,7 @@
             "begin cognitive exercises",
             "start brain training",
             "help me with thinking exercises",
-            "let\u0027s do mental exercises"
+            "let's do mental exercises"
           ]
         },
         {
@@ -91,9 +91,9 @@
           "name": "NextExerciseIntent",
           "samples": [
             "next exercise",
-            "I\u0027m ready for the next one",
+            "I'm ready for the next one",
             "go to the next step",
-            "what\u0027s next",
+            "what's next",
             "continue",
             "move on",
             "next",
@@ -107,7 +107,7 @@
             "repeat that",
             "say that again",
             "please repeat the instructions",
-            "I didn\u0027t catch that step",
+            "I didn't catch that step",
             "can you repeat that",
             "what was that again",
             "repeat the exercise"
@@ -118,7 +118,7 @@
           "name": "SkipExerciseIntent",
           "samples": [
             "skip this exercise",
-            "I can\u0027t do this one",
+            "I can't do this one",
             "skip to the next",
             "move past this exercise",
             "skip this one",
@@ -158,8 +158,8 @@
             "that was {level}",
             "it felt {level}",
             "that felt {level}",
-            "it\u0027s {level}",
-            "that\u0027s {level}",
+            "it's {level}",
+            "that's {level}",
             "the exercise was {level}",
             "the exercises are {level}"
           ]
@@ -184,10 +184,10 @@
             "how am I doing",
             "check my rehab progress",
             "am I improving",
-            "what\u0027s my exercise record",
+            "what's my exercise record",
             "show my progress",
             "how many sessions have I completed",
-            "what\u0027s my streak"
+            "what's my streak"
           ]
         },
         {
@@ -214,7 +214,6 @@
             "cancel my exercise reminder",
             "remove my rehab reminder",
             "stop all rehab reminders",
-            "delete my reminders",
             "turn off exercise reminders",
             "cancel reminders"
           ]
@@ -238,7 +237,18 @@
             "summarize my session",
             "where am I in my session",
             "session summary",
-            "what\u0027s my progress in this session"
+            "what's my progress in this session"
+          ]
+        },
+        {
+          "slots": [],
+          "name": "EndSessionIntent",
+          "samples": [
+            "end session",
+            "finish my session",
+            "stop the session",
+            "quit session",
+            "I'm done for now"
           ]
         },
         {
