@@ -112,6 +112,34 @@ def get_slot_value(handler_input, slot_name: str, default_value: Any = None) -> 
     except (AttributeError, KeyError):
         return default_value
 
+def get_slot_str(handler_input, slot_name: str) -> Optional[str]:
+    """Safely extract a slot string from the handler input.
+
+    This helper abstracts the differences between the ask-sdk ``Slot`` object
+    and a simple ``dict`` representation. ``None`` is returned if the slot or
+    value cannot be found.
+
+    Args:
+        handler_input: The Alexa handler input object.
+        slot_name: Name of the slot to retrieve.
+
+    Returns:
+        Optional[str]: The slot value as a string or ``None``.
+    """
+    try:
+        slots = handler_input.request_envelope.request.intent.slots or {}
+    except AttributeError:
+        return None
+
+    slot = slots.get(slot_name)
+    if slot is None:
+        return None
+
+    if isinstance(slot, dict):
+        return slot.get("value")
+
+    return getattr(slot, "value", None)
+
 def get_user_id(handler_input) -> Optional[str]:
     """
     Safely extract the user ID from an Alexa request.
