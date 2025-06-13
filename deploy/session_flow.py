@@ -60,7 +60,7 @@ class SessionState:
         self.last_action_time = datetime.datetime.now().isoformat()
         
         # New fields for passive tracking
-        self.skips = []  # List of booleans indicating if each exercise was skipped
+        self.skips = []  # List of skipped exercise IDs
         self.repeats = []  # List of integers counting repeats for each exercise
         self.completion_times = []  # List of completion times in seconds for each exercise
         self.feedback = []  # List of feedback levels for exercises
@@ -152,11 +152,7 @@ class SessionState:
         while len(self.completion_times) <= self.current_index:
             self.completion_times.append(0)
         self.completion_times[self.current_index] = completion_time
-        
-        # Record that this exercise was not skipped
-        while len(self.skips) <= self.current_index:
-            self.skips.append(False)
-        
+
         if self.current_index < len(self.exercises) - 1:
             self.current_index += 1
             self.last_action_time = datetime.datetime.now().isoformat()
@@ -175,10 +171,10 @@ class SessionState:
         Returns:
             bool: True if successfully skipped, False if at the end of the session
         """
-        # Record that this exercise was skipped
-        while len(self.skips) <= self.current_index:
-            self.skips.append(False)
-        self.skips[self.current_index] = True
+        # Record that this exercise was skipped by storing its ID
+        current_exercise = self.get_current_exercise()
+        if current_exercise:
+            self.skips.append(current_exercise["id"])
         
         # Advance to next exercise
         if self.current_index < len(self.exercises) - 1:
