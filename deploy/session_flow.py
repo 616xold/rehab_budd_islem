@@ -10,6 +10,7 @@ functions that the Alexa intent handlers can call to progress through a session.
 """
 
 from typing import Dict, Any, List, Optional, Tuple
+from dataclasses import dataclass
 import datetime
 import json
 import time
@@ -33,6 +34,18 @@ from difficulty_engine import (
     clear_session_progress,
     get_congratulatory_message
 )
+
+@dataclass
+class Exercise:
+    id: str
+    name: str
+    instructions: str
+    type: str
+    difficulty: str
+    repetitions: int
+    duration: Optional[int]
+    rest: int
+    precautions: str
 
 class SessionState:
     """Class to represent and manage the state of a rehabilitation session."""
@@ -126,6 +139,30 @@ class SessionState:
         session.last_exercise_start_time = state_dict.get("last_exercise_start_time", time.time())
         session.should_ask_feedback = state_dict.get("should_ask_feedback", False)
         session.pending_congratulation = state_dict.get("pending_congratulation", False)
+
+        return session
+
+    @classmethod
+    def from_dynamo(cls, dynamo_dict: Dict[str, Any]) -> 'SessionState':
+        """Create a SessionState object from a DynamoDB item."""
+        session = cls(dynamo_dict["user_id"], dynamo_dict.get("exercise_type", "physical"))
+        session.current_index = int(dynamo_dict.get("current_index", 0))
+        session.difficulty = dynamo_dict.get("difficulty", "beginner")
+
+        raw_exercises = dynamo_dict.get("exercises", [])
+        session.exercises = [Exercise(**e) for e in raw_exercises]
+
+        session.start_time = dynamo_dict.get("start_time", session.start_time)
+        session.completed = dynamo_dict.get("completed", False)
+        session.last_action_time = dynamo_dict.get("last_action_time", session.last_action_time)
+
+        session.skips = dynamo_dict.get("skips", [])
+        session.repeats = dynamo_dict.get("repeats", [])
+        session.completion_times = dynamo_dict.get("completion_times", [])
+        session.feedback = dynamo_dict.get("feedback", [])
+        session.last_exercise_start_time = dynamo_dict.get("last_exercise_start_time", time.time())
+        session.should_ask_feedback = dynamo_dict.get("should_ask_feedback", False)
+        session.pending_congratulation = dynamo_dict.get("pending_congratulation", False)
 
         return session
 
