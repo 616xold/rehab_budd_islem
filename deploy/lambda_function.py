@@ -14,6 +14,8 @@ import boto3
 from datetime import datetime
 from typing import Dict, Any
 
+from utils import get_slot_str
+
 # Import Alexa Skills Kit SDK
 from ask_sdk_core.skill_builder import CustomSkillBuilder as SkillBuilder 
 from ask_sdk_core.dispatch_components import AbstractRequestHandler, AbstractExceptionHandler
@@ -50,7 +52,9 @@ from reminder_manager import (
 )
 from progress_tracker import (
     get_user_progress,
-    get_weekly_summary
+    get_weekly_summary,
+    finish_session,
+    get_user_summary
 )
 from difficulty_engine import (
     adjust_difficulty,
@@ -257,6 +261,41 @@ class SkipExerciseIntentHandler(AbstractRequestHandler):
         else:
             return handler_input.response_builder.speak(speech_text).ask("Say 'next exercise' when you're ready to continue.").response
 
+class EncouragementIntentHandler(AbstractRequestHandler):
+    """Handler for EncouragementIntent"""
+    def can_handle(self, handler_input):
+        return is_intent_name("EncouragementIntent")(handler_input)
+
+    def handle(self, handler_input):
+        speech_text = get_random_encouragement()
+        return handler_input.response_builder.speak(speech_text).response
+
+class CheckProgressIntentHandler(AbstractRequestHandler):
+    """Handler for CheckProgressIntent"""
+    def can_handle(self, handler_input):
+        return is_intent_name("CheckProgressIntent")(handler_input)
+
+    def handle(self, handler_input):
+        user_id = handler_input.request_envelope.session.user.user_id
+        try:
+            summary = get_user_summary(user_id)
+            speech_text = summary if isinstance(summary, str) else json.dumps(summary)
+        except Exception as e:
+            logger.error(f"Error getting progress summary: {e}")
+            speech_text = "Sorry, I couldn't get your progress right now."
+        return handler_input.response_builder.speak(speech_text).response
+
+class SessionSummaryIntentHandler(AbstractRequestHandler):
+    """Handler for SessionSummaryIntent"""
+    def can_handle(self, handler_input):
+        return is_intent_name("SessionSummaryIntent")(handler_input)
+
+    def handle(self, handler_input):
+        speech_text, should_end = get_session_summary(handler_input)
+        if should_end:
+            return handler_input.response_builder.speak(speech_text).set_should_end_session(True).response
+        return handler_input.response_builder.speak(speech_text).ask(speech_text).response
+
 class AdjustDifficultyIntentHandler(AbstractRequestHandler):
     """Handler for AdjustDifficultyIntent"""
     def can_handle(self, handler_input):
@@ -271,19 +310,8 @@ class AdjustDifficultyIntentHandler(AbstractRequestHandler):
             is_simulator = device_id.startswith("simulator")
             
             # Get the direction (easier or harder)
-            slots = handler_input.request_envelope.request.intent.slots or {}
-            
-            # Log the slots for debugging
-            logger.info(f"AdjustDifficultyIntent slots: {slots}")
-            
-            # Check if direction slot exists
-            if 'direction' in slots:
-                direction = slots.get('direction', {}).get('value', '')
-                logger.info(f"Direction from slot: {direction}")
-            else:
-                # No direction slot found, default to "easier" and log
-                direction = ''
-                logger.info("No direction slot found in request, defaulting to 'easier'")
+            direction = get_slot_str(handler_input, "direction") or ""
+            logger.info(f"Direction from slot: {direction}")
             
             # Default to making it easier if direction is unclear
             make_easier = True
@@ -444,6 +472,16 @@ class YesIntentHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         user_id = handler_input.request_envelope.session.user.user_id
         session_attr = handler_input.attributes_manager.session_attributes
+
+        if session_attr.get("pendingAction") == "cancelRem":
+            session_attr.pop("pendingAction")
+            handler_input.attributes_manager.session_attributes = session_attr
+            success, _ = cancel_all_reminders(handler_input, user_id)
+            if success:
+                speech_text = "I've cancelled all your rehabilitation exercise reminders."
+            else:
+                speech_text = "I had trouble cancelling your reminders."
+            return handler_input.response_builder.speak(speech_text).ask("Anything else?").response
         
         # Check if we're offering to resume a session
         if session_attr.get("offering_resume", False):
@@ -475,6 +513,12 @@ class NoIntentHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         user_id = handler_input.request_envelope.session.user.user_id
         session_attr = handler_input.attributes_manager.session_attributes
+
+        if session_attr.get("pendingAction") == "cancelRem":
+            session_attr.pop("pendingAction")
+            handler_input.attributes_manager.session_attributes = session_attr
+            speech_text = "Okay, I won't cancel your reminders."
+            return handler_input.response_builder.speak(speech_text).ask("Anything else?").response
         
         # Check if we're offering to resume a session
         if session_attr.get("offering_resume", False):
@@ -581,33 +625,10 @@ class CancelRemindersIntentHandler(AbstractRequestHandler):
         if not has_reminders_permission(handler_input):
             return build_permissions_response(handler_input)
         
-        # 1) Are we inside the confirmation flow already?
         session = handler_input.attributes_manager.session_attributes
-        if session.get("awaiting_cancel_confirm"):
-            session.pop("awaiting_cancel_confirm")        # clear the flag
-            # User just said "yes" or "no"
-            if is_intent_name("AMAZON.YesIntent")(handler_input):
-                try:
-                    # Get user ID and cancel all reminders
-                    user_id = handler_input.request_envelope.session.user.user_id
-                    success, result = cancel_all_reminders(handler_input, user_id)
-                    
-                    if success:
-                        speech_text = "I've cancelled all your rehabilitation exercise reminders. Is there anything else you'd like to do?"
-                    else:
-                        if result == "permission_required":
-                            speech_text = "I don't have permission to manage reminders. Please enable reminders in the Alexa app."
-                        else:
-                            speech_text = "I had trouble cancelling your reminders. Please try again later."
-                except Exception as e:
-                    logger.error(f"Error cancelling reminders: {str(e)}")
-                    speech_text = "I had trouble cancelling your reminders. Please try again later."
-            else:   # user said "no"
-                speech_text = "Okay, I won't cancel your reminders."
-            return handler_input.response_builder.speak(speech_text).ask("Anything else?").response
+        session["pendingAction"] = "cancelRem"
+        handler_input.attributes_manager.session_attributes = session
 
-        # 2) Normal entry point – ask for confirmation first
-        session["awaiting_cancel_confirm"] = True
         confirm = "Are you sure you want to cancel all of your rehabilitation exercise reminders?"
         return handler_input.response_builder.speak(confirm).ask(confirm).response
 
@@ -737,7 +758,25 @@ class EndSessionIntentHandler(AbstractRequestHandler):
         return is_intent_name("EndSessionIntent")(handler_input)
 
     def handle(self, handler_input):
-        speech_text, should_end_session = end_session(handler_input)
+        user_id = handler_input.request_envelope.session.user.user_id
+        session_attr = handler_input.attributes_manager.session_attributes
+
+        try:
+            end_session(handler_input)
+        except Exception as e:
+            logger.error(f"Error ending session: {e}")
+
+        exercise_type = session_attr.get("session_state", {}).get("exercise_type", "physical")
+
+        try:
+            finish_session(user_id, exercise_type, completed=True)
+        except Exception as e:
+            logger.error(f"Error logging finished session: {e}")
+
+        session_attr.pop("session_state", None)
+        handler_input.attributes_manager.session_attributes = session_attr
+
+        speech_text = "Great work! I've marked this session complete."
         return handler_input.response_builder.speak(speech_text).set_should_end_session(True).response
 
 class HelpIntentHandler(AbstractRequestHandler):
@@ -867,12 +906,15 @@ sb.add_request_handler(StartCognitiveExerciseIntentHandler())
 sb.add_request_handler(NextExerciseIntentHandler())
 sb.add_request_handler(RepeatExerciseIntentHandler())
 sb.add_request_handler(SkipExerciseIntentHandler())
+sb.add_request_handler(EncouragementIntentHandler())
 sb.add_request_handler(AdjustDifficultyIntentHandler())
 sb.add_request_handler(DifficultyFeedbackIntentHandler())
 sb.add_request_handler(YesIntentHandler())
 sb.add_request_handler(NoIntentHandler())
 sb.add_request_handler(SetRehabReminderIntentHandler())
 sb.add_request_handler(CancelRemindersIntentHandler())
+sb.add_request_handler(CheckProgressIntentHandler())
+sb.add_request_handler(SessionSummaryIntentHandler())
 sb.add_request_handler(GetProgressIntentHandler())
 sb.add_request_handler(GetSessionSummaryIntentHandler())
 sb.add_request_handler(EndSessionIntentHandler())
