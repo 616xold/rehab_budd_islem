@@ -651,10 +651,23 @@ def is_running_in_simulator(handler_input):
 class CancelRemindersIntentHandler(AbstractRequestHandler):
     """Handle every cancel-reminder intent name we've ever used."""
     def can_handle(self, handler_input):
-        return (
-            is_intent_name("CancelRehabReminderIntent")(handler_input) or  # current US model
-            is_intent_name("CancelRemindersIntent")(handler_input)        # UK / legacy
-        )
+        request = handler_input.request_envelope.request
+        if request.object_type != "IntentRequest":
+            return False
+
+        # Require exact intent name match to avoid loose NLU mapping
+        intent_name = getattr(request.intent, "name", "")
+        if intent_name != "CancelRehabReminderIntent":
+            return False
+
+        # If we have the raw utterance and it looks like the user asked to
+        # list reminders instead, don't handle here. This helps when the NLU
+        # mis-classifies a "list" request as a cancel intent.
+        utterance = getattr(request, "input_transcript", "")
+        if utterance and "list" in utterance.lower():
+            return False
+
+        return True
 
     def handle(self, handler_input):
         # Check if running in simulator
