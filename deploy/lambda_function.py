@@ -741,18 +741,6 @@ class GetProgressIntentHandler(AbstractRequestHandler):
             speech_text = "I had trouble retrieving your progress information. Would you like to start a new session?"
             return handler_input.response_builder.speak(speech_text).ask(speech_text).response
 
-class GetSessionSummaryIntentHandler(AbstractRequestHandler):
-    """Handler for GetSessionSummaryIntent"""
-    def can_handle(self, handler_input):
-        return is_intent_name("GetSessionSummaryIntent")(handler_input)
-
-    def handle(self, handler_input):
-        speech_text, should_end_session = get_session_summary(handler_input)
-        
-        if should_end_session:
-            return handler_input.response_builder.speak(speech_text).set_should_end_session(True).response
-        else:
-            return handler_input.response_builder.speak(speech_text).ask(speech_text).response
 
 class EndSessionIntentHandler(AbstractRequestHandler):
     """Handler for EndSessionIntent"""
@@ -923,7 +911,6 @@ sb.add_request_handler(CancelRemindersIntentHandler())
 sb.add_request_handler(CheckProgressIntentHandler())
 sb.add_request_handler(SessionSummaryIntentHandler())
 sb.add_request_handler(GetProgressIntentHandler())
-sb.add_request_handler(GetSessionSummaryIntentHandler())
 sb.add_request_handler(EndSessionIntentHandler())
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(CancelOrStopIntentHandler())
