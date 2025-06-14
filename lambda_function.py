@@ -157,11 +157,44 @@ class StartSessionIntentHandler(AbstractRequestHandler):
 
     def handle(self, handler_input):
         user_id = handler_input.request_envelope.session.user.user_id
+        exercise_type = 'physical'
         try:
-            slots = handler_input.request_envelope.request.intent.slots
-            exercise_type = slots.get('exerciseType', {}).get('value', 'physical')
-        except (AttributeError, KeyError):
-            exercise_type = 'physical'
+            slots = handler_input.request_envelope.request.intent.slots or {}
+            slot = slots.get('exerciseType')
+
+            if slot:
+                # Attempt to resolve the slot to a canonical value
+                resolved = None
+                try:
+                    resolutions = getattr(slot, 'resolutions', None)
+                    if resolutions and resolutions.resolutions_per_authority:
+                        for res in resolutions.resolutions_per_authority:
+                            if res.status.code == 'ER_SUCCESS_MATCH':
+                                resolved = res.values[0].value.name.lower()
+                                break
+                except Exception as e:
+                    logger.warning(f"Error getting slot resolution: {e}")
+
+                # Fallback to raw slot value if no resolution
+                slot_value = getattr(slot, 'value', None)
+                if resolved:
+                    exercise_type = resolved
+                elif slot_value:
+                    exercise_type = slot_value.lower()
+        except Exception as e:
+            logger.error(f"Error retrieving exerciseType slot: {e}")
+
+        valid_types = ["physical", "speech", "cognitive"]
+        if exercise_type not in valid_types:
+            # User might have said "end" or something unrelated
+            if exercise_type in ["end", "stop", "cancel", "quit", "finish"]:
+                return EndSessionIntentHandler().handle(handler_input)
+
+            speech_text = (
+                "I didn't catch the type of therapy you want to start. "
+                "You can choose physical, speech, or cognitive therapy. Which would you like?"
+            )
+            return handler_input.response_builder.speak(speech_text).ask(speech_text).response
 
         speech_text, should_end_session = start_session(handler_input, user_id, exercise_type)
 
@@ -912,6 +945,7 @@ class CatchAllExceptionHandler(AbstractExceptionHandler):
 
 # Register request handlers
 sb.add_request_handler(LaunchRequestHandler())
+sb.add_request_handler(EndSessionIntentHandler())
 sb.add_request_handler(StartSessionIntentHandler())
 sb.add_request_handler(StartPhysicalTherapyIntentHandler())
 sb.add_request_handler(StartSpeechTherapyIntentHandler())
@@ -930,7 +964,6 @@ sb.add_request_handler(CheckProgressIntentHandler())
 sb.add_request_handler(SessionSummaryIntentHandler())
 sb.add_request_handler(GetProgressIntentHandler())
 sb.add_request_handler(GetSessionSummaryIntentHandler())
-sb.add_request_handler(EndSessionIntentHandler())
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(CancelOrStopIntentHandler())
 sb.add_request_handler(FallbackIntentHandler())
