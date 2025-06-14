@@ -248,7 +248,9 @@
             "finish my session",
             "stop the session",
             "quit session",
-            "I'm done for now"
+            "I'm done for now",
+            "end rehab",
+            "finish rehab"
           ]
         },
         {
