@@ -14,7 +14,7 @@ import boto3
 from datetime import datetime
 from typing import Dict, Any
 
-from utils import get_slot_str
+from utils import get_slot_str, get_resolved_slot_value
 
 # Import Alexa Skills Kit SDK
 from ask_sdk_core.skill_builder import CustomSkillBuilder as SkillBuilder 
@@ -157,32 +157,13 @@ class StartSessionIntentHandler(AbstractRequestHandler):
 
     def handle(self, handler_input):
         user_id = handler_input.request_envelope.session.user.user_id
-        exercise_type = 'physical'
+        exercise_type = get_resolved_slot_value(handler_input, "exerciseType") or "physical"
         try:
-            slots = handler_input.request_envelope.request.intent.slots or {}
-            slot = slots.get('exerciseType')
-
-            if slot:
-                # Attempt to resolve the slot to a canonical value
-                resolved = None
-                try:
-                    resolutions = getattr(slot, 'resolutions', None)
-                    if resolutions and resolutions.resolutions_per_authority:
-                        for res in resolutions.resolutions_per_authority:
-                            if res.status.code == 'ER_SUCCESS_MATCH':
-                                resolved = res.values[0].value.name.lower()
-                                break
-                except Exception as e:
-                    logger.warning(f"Error getting slot resolution: {e}")
-
-                # Fallback to raw slot value if no resolution
-                slot_value = getattr(slot, 'value', None)
-                if resolved:
-                    exercise_type = resolved
-                elif slot_value:
-                    exercise_type = slot_value.lower()
+            # Sanity check in case the slot value returned unexpected data
+            if exercise_type:
+                exercise_type = exercise_type.lower()
         except Exception as e:
-            logger.error(f"Error retrieving exerciseType slot: {e}")
+            logger.error(f"Error normalizing exerciseType slot: {e}")
 
         valid_types = ["physical", "speech", "cognitive"]
         if exercise_type not in valid_types:
@@ -753,6 +734,8 @@ class EndSessionIntentHandler(AbstractRequestHandler):
             logger.error(f"Error ending session: {e}")
 
         exercise_type = session_attr.get("session_state", {}).get("exercise_type", "physical")
+        if exercise_type:
+            exercise_type = exercise_type.lower()
 
         try:
             finish_session(user_id, exercise_type, completed=True)
