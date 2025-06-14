@@ -140,6 +140,57 @@ def get_slot_str(handler_input, slot_name: str) -> Optional[str]:
 
     return getattr(slot, "value", None)
 
+def get_resolved_slot_value(handler_input, slot_name: str, fallback_to_value: bool = True) -> Optional[str]:
+    """Return the resolved canonical slot value if available.
+
+    This helper looks at the slot resolutions to find the canonical value
+    for a slot. If a resolution with status ``ER_SUCCESS_MATCH`` is found,
+    the resolved name is returned in lower case.  If no successful
+    resolution is present and ``fallback_to_value`` is ``True``, the raw
+    slot value is returned instead.
+
+    Args:
+        handler_input: The Alexa handler input object.
+        slot_name: Name of the slot to retrieve.
+        fallback_to_value: Whether to fall back to the raw slot value when
+            no resolution is available.
+
+    Returns:
+        Optional[str]: The resolved or raw slot value in lower case, or
+            ``None`` if not found.
+    """
+    try:
+        slots = handler_input.request_envelope.request.intent.slots or {}
+    except AttributeError:
+        return None
+
+    slot = slots.get(slot_name)
+    if slot is None:
+        return None
+
+    # Support both ask-sdk ``Slot`` objects and dict representations
+    if isinstance(slot, dict):
+        resolutions = slot.get("resolutions")
+        value = slot.get("value")
+    else:
+        resolutions = getattr(slot, "resolutions", None)
+        value = getattr(slot, "value", None)
+
+    if resolutions and getattr(resolutions, "resolutions_per_authority", None):
+        for res in resolutions.resolutions_per_authority:
+            try:
+                if res.status.code == "ER_SUCCESS_MATCH" and res.values:
+                    resolved_name = res.values[0].value.name
+                    if resolved_name:
+                        return resolved_name.lower()
+            except AttributeError:
+                continue
+
+    if fallback_to_value and value:
+        return str(value).lower()
+
+    return None
+
 def get_user_id(handler_input) -> Optional[str]:
     """
     Safely extract the user ID from an Alexa request.
