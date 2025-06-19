@@ -11,10 +11,12 @@ import logging
 import json
 import os
 import boto3
+import time
 from datetime import datetime
 from typing import Dict, Any
 
 from utils import get_slot_str, get_resolved_slot_value
+from progress_tracker import update_profile_attribute
 
 # Import Alexa Skills Kit SDK
 from ask_sdk_core.skill_builder import CustomSkillBuilder as SkillBuilder 
@@ -177,6 +179,12 @@ class StartSessionIntentHandler(AbstractRequestHandler):
             )
             return handler_input.response_builder.speak(speech_text).ask(speech_text).response
 
+        cat = get_resolved_slot_value(handler_input, "strokeCategory")
+        if cat:
+            session_attr = handler_input.attributes_manager.session_attributes
+            session_attr["currentCategory"] = cat
+            handler_input.attributes_manager.session_attributes = session_attr
+
         speech_text, should_end_session = start_session(handler_input, user_id, exercise_type)
 
         if should_end_session:
@@ -309,6 +317,78 @@ class SessionSummaryIntentHandler(AbstractRequestHandler):
         if should_end:
             return handler_input.response_builder.speak(speech_text).set_should_end_session(True).response
         return handler_input.response_builder.speak(speech_text).ask(speech_text).response
+
+# ---------------------------------------------------------------------------
+class ReportPainIntentHandler(AbstractRequestHandler):
+    def can_handle(self, hi):
+        return is_intent_name("ReportPainIntent")(hi)
+
+    def handle(self, hi):
+        body = get_slot_str(hi, "body") or "unspecified"
+        sess = hi.attributes_manager.session_attributes
+        sess["lastPainReport"] = {"area": body, "ts": time.time()}
+        hi.attributes_manager.session_attributes = sess
+
+        update_profile_attribute(
+            hi.request_envelope.session.user.user_id,
+            "lastPainReport",
+            sess["lastPainReport"]
+        )
+
+        speech = f"I’ve noted the pain in your {body}. Tell me when you’re ready to continue."
+        return hi.response_builder.speak(speech).ask("Shall we carry on?").response
+
+# ---------------------------------------------------------------------------
+class ReportFatigueIntentHandler(AbstractRequestHandler):
+    def can_handle(self, hi):
+        return is_intent_name("ReportFatigueIntent")(hi)
+
+    def handle(self, hi):
+        score_raw = get_slot_str(hi, "score") or "0"
+        try:
+            score = max(0, min(10, int(score_raw)))
+        except ValueError:
+            score = 5
+        sess = hi.attributes_manager.session_attributes
+        sess["lastFatigueScore"] = {"score": score, "ts": time.time()}
+        hi.attributes_manager.session_attributes = sess
+
+        update_profile_attribute(
+            hi.request_envelope.session.user.user_id,
+            "fatigueScore",
+            score
+        )
+
+        return hi.response_builder.speak(
+            f"I’ve logged a fatigue level of {score} out of 10. "
+            "Let me know when you’re ready to continue."
+        ).ask("Ready to go on?").response
+
+# ---------------------------------------------------------------------------
+class AskWhyIntentHandler(AbstractRequestHandler):
+    def can_handle(self, hi):
+        return is_intent_name("AskWhyIntent")(hi)
+
+    def handle(self, hi):
+        speech = (
+            "Sure – this exercise helps improve the range of motion "
+            "in your wrist, which is important for everyday tasks. "
+            "Say ‘repeat’ if you’d like to hear the instructions again."
+        )
+        return hi.response_builder.speak(speech).ask("Ready to continue?").response
+
+# ---------------------------------------------------------------------------
+class AskEquipmentIntentHandler(AbstractRequestHandler):
+    def can_handle(self, hi):
+        return is_intent_name("AskEquipmentIntent")(hi)
+
+    def handle(self, hi):
+        speech = (
+            "For this exercise you only need a resistance band. "
+            "Let me know when you have it in place."
+        )
+        return hi.response_builder.speak(speech).ask("Shall we carry on?").response
+# ---------------------------------------------------------------------------
 
 class AdjustDifficultyIntentHandler(AbstractRequestHandler):
     """Handler for AdjustDifficultyIntent"""
@@ -938,6 +1018,10 @@ sb.add_request_handler(NextExerciseIntentHandler())
 sb.add_request_handler(RepeatExerciseIntentHandler())
 sb.add_request_handler(SkipExerciseIntentHandler())
 sb.add_request_handler(EncouragementIntentHandler())
+sb.add_request_handler(ReportPainIntentHandler())
+sb.add_request_handler(ReportFatigueIntentHandler())
+sb.add_request_handler(AskWhyIntentHandler())
+sb.add_request_handler(AskEquipmentIntentHandler())
 sb.add_request_handler(AdjustDifficultyIntentHandler())
 sb.add_request_handler(DifficultyFeedbackIntentHandler())
 sb.add_request_handler(YesIntentHandler())

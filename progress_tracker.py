@@ -95,6 +95,22 @@ def ensure_table_exists():
         print(f"Error ensuring table exists: {str(e)}")
         return False
 
+def update_profile_attribute(user_id: str, key: str, value: Any):
+    """Update a single attribute in the user's DynamoDB profile."""
+    try:
+        if not ensure_table_exists():
+            return
+
+        dynamodb = get_dynamodb_resource()
+        table = dynamodb.Table(config.DYNAMO_TABLE_NAME)
+        table.update_item(
+            Key={'user_id': user_id},
+            UpdateExpression=f"SET {key} = :v",
+            ExpressionAttributeValues={':v': value}
+        )
+    except Exception as e:
+        print(f"Error updating {key} for {user_id}: {e}")
+
 def log_session_completion(user_id: str, exercise_type: str = "physical") -> bool:
     """
     Log a completed rehabilitation session for a user.

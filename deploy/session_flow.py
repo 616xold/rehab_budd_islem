@@ -81,6 +81,11 @@ class SessionState:
         self.should_ask_feedback = False  # Flag to indicate if we should ask for feedback
         self.pending_congratulation = False  # Flag to indicate if we should congratulate the user
 
+        # Tracking for pain, fatigue, and stroke category
+        self.lastPainReport = None
+        self.lastFatigueScore = None
+        self.currentCategory = None
+
     def to_dict(self) -> Dict[str, Any]:
         """
         Convert the session state to a dictionary for storage in Alexa session attributes.
@@ -104,6 +109,9 @@ class SessionState:
             "last_exercise_start_time": self.last_exercise_start_time,
             "should_ask_feedback": self.should_ask_feedback,
             "pending_congratulation": self.pending_congratulation,
+            "lastPainReport": self.lastPainReport,
+            "lastFatigueScore": self.lastFatigueScore,
+            "currentCategory": self.currentCategory,
             "inProgress": not self.completed,
             "sessionStartDate": self.start_time
         }
@@ -139,6 +147,9 @@ class SessionState:
         session.last_exercise_start_time = state_dict.get("last_exercise_start_time", time.time())
         session.should_ask_feedback = state_dict.get("should_ask_feedback", False)
         session.pending_congratulation = state_dict.get("pending_congratulation", False)
+        session.lastPainReport = state_dict.get("lastPainReport")
+        session.lastFatigueScore = state_dict.get("lastFatigueScore")
+        session.currentCategory = state_dict.get("currentCategory")
 
         return session
 
@@ -163,6 +174,9 @@ class SessionState:
         session.last_exercise_start_time = dynamo_dict.get("last_exercise_start_time", time.time())
         session.should_ask_feedback = dynamo_dict.get("should_ask_feedback", False)
         session.pending_congratulation = dynamo_dict.get("pending_congratulation", False)
+        session.lastPainReport = dynamo_dict.get("lastPainReport")
+        session.lastFatigueScore = dynamo_dict.get("lastFatigueScore")
+        session.currentCategory = dynamo_dict.get("currentCategory")
 
         return session
 
