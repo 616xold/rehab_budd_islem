@@ -446,6 +446,45 @@ def get_weekly_summary(user_id: str) -> Dict[str, Any]:
         'max_streak': progress.get('max_streak', 0)
     }
 
+
+def get_user_summary(user_id: str) -> str:
+    """Return a short text summary of a user's progress.
+
+    This helper pulls together overall progress and this week's activity to
+    generate a single summary sentence.  It is primarily used by the
+    ``CheckProgressIntent`` handler to give the user a quick update.
+
+    Args:
+        user_id: The unique identifier for the user.
+
+    Returns:
+        str: Formatted summary sentence.
+    """
+
+    progress = get_user_progress(user_id) or {}
+    weekly = get_weekly_summary(user_id) or {}
+
+    total_sessions = progress.get('sessions_completed', 0)
+    sessions_this_week = weekly.get('sessions_this_week', 0)
+    current_streak = progress.get('current_streak', 0)
+    max_streak = progress.get('max_streak', 0)
+
+    parts = [f"You've completed {total_sessions} session" + ("s" if total_sessions != 1 else "")]
+
+    if sessions_this_week:
+        parts.append(f"including {sessions_this_week} this week")
+
+    if current_streak:
+        streak_part = f"Your current streak is {current_streak} day" + ("s" if current_streak != 1 else "")
+        parts.append(streak_part)
+
+    if max_streak and max_streak != current_streak:
+        longest_part = f"Your longest streak is {max_streak} day" + ("s" if max_streak != 1 else "")
+        parts.append(longest_part)
+
+    summary = ". ".join(parts) + "."
+    return summary
+
 def get_exercise_type_stats(user_id: str) -> Dict[str, int]:
     """
     Get statistics for each exercise type.
