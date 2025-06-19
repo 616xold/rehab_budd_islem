@@ -54,25 +54,36 @@
             { "name":"strokeCategory","type":"StrokeExerciseCategory"}
           ],
           "samples":[
-            "begin my {exerciseType} rehab session",
-            "start {strokeCategory} training",
-            "I want to do {strokeCategory} {exerciseType}",
-            "help me with {strokeCategory}"
+            "start {exerciseType} therapy",
+            "start {exerciseType}",
+            "start {exerciseType} exercises",
+            "begin {exerciseType} session",
+            "start therapy",
+            "begin rehab session"
           ]
         },
         {
           "name": "ReportPainIntent",
           "slots":[ { "name":"body","type":"BodyArea"} ],
           "samples":[
-            "my {body} hurts", "I feel pain in my {body}", 
+            "my {body} hurts", "I feel pain in my {body}",
             "this exercise hurts"
+          ]
+        },
+        {
+          "name": "ReportFatigueIntent",
+          "slots":[{"name":"score","type":"AMAZON.NUMBER"}],
+          "samples":[
+            "my fatigue is {score}",
+            "I'm at {score} out of ten",
+            "I'm tired"
           ]
         },
         {
           "name": "AskWhyIntent",
           "slots":[],
           "samples":[
-            "why do I need this exercise", 
+            "why do I need this exercise",
             "what is the benefit of this",
             "how does this help recovery"
           ]

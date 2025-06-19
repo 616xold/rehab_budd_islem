@@ -140,6 +140,23 @@ def get_slot_str(handler_input, slot_name: str) -> Optional[str]:
 
     return getattr(slot, "value", None)
 
+def get_resolved_slot_value(handler_input, slot_name: str) -> Optional[str]:
+    """Return the *resolved* canonical slot value if it exists.
+
+    If no resolution is available this falls back to the raw slot value.
+    """
+    try:
+        slot = handler_input.request_envelope.request.intent.slots.get(slot_name)
+        if not slot:
+            return None
+        if slot.resolutions and slot.resolutions.resolutions_per_authority:
+            for res in slot.resolutions.resolutions_per_authority:
+                if res.status.code.value == "ER_SUCCESS_MATCH":
+                    return res.values[0].value.name
+        return slot.value
+    except AttributeError:
+        return None
+
 def get_user_id(handler_input) -> Optional[str]:
     """
     Safely extract the user ID from an Alexa request.

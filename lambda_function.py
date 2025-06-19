@@ -192,59 +192,11 @@ class StartSessionIntentHandler(AbstractRequestHandler):
         else:
             return handler_input.response_builder.speak(speech_text).ask("Say 'next exercise' when you're ready to continue.").response
 
-class StartPhysicalTherapyIntentHandler(AbstractRequestHandler):
-    """Handler for StartPhysicalTherapyIntent"""
-    def can_handle(self, handler_input):
-        return is_intent_name("StartPhysicalTherapyIntent")(handler_input)
-
-    def handle(self, handler_input):
-        user_id = handler_input.request_envelope.session.user.user_id
-        exercise_type = 'physical'
-
-        speech_text, should_end_session = start_session(handler_input, user_id, exercise_type)
-
-        if should_end_session:
-            return handler_input.response_builder.speak(speech_text).set_should_end_session(True).response
-        else:
-            return handler_input.response_builder.speak(speech_text).ask("Say 'next exercise' when you're ready to continue.").response
-
-class StartSpeechTherapyIntentHandler(AbstractRequestHandler):
-    """Handler for StartSpeechTherapyIntent"""
-    def can_handle(self, handler_input):
-        return is_intent_name("StartSpeechTherapyIntent")(handler_input)
-
-    def handle(self, handler_input):
-        user_id = handler_input.request_envelope.session.user.user_id
-        exercise_type = 'speech'
-
-        speech_text, should_end_session = start_session(handler_input, user_id, exercise_type)
-
-        if should_end_session:
-            return handler_input.response_builder.speak(speech_text).set_should_end_session(True).response
-        else:
-            return handler_input.response_builder.speak(speech_text).ask("Say 'next exercise' when you're ready to continue.").response
-
-class StartCognitiveExerciseIntentHandler(AbstractRequestHandler):
-    """Handler for StartCognitiveExerciseIntent"""
-    def can_handle(self, handler_input):
-        return is_intent_name("StartCognitiveExerciseIntent")(handler_input)
-
-    def handle(self, handler_input):
-        user_id = handler_input.request_envelope.session.user.user_id
-        exercise_type = 'cognitive'
-
-        speech_text, should_end_session = start_session(handler_input, user_id, exercise_type)
-
-        if should_end_session:
-            return handler_input.response_builder.speak(speech_text).set_should_end_session(True).response
-        else:
-            return handler_input.response_builder.speak(speech_text).ask("Say 'next exercise' when you're ready to continue.").response
 
 class NextExerciseIntentHandler(AbstractRequestHandler):
-    """Handler for NextExerciseIntent (renamed from NextStepIntent)"""
+    """Handler for NextExerciseIntent"""
     def can_handle(self, handler_input):
-        return (is_intent_name("NextExerciseIntent")(handler_input) or
-                is_intent_name("NextStepIntent")(handler_input))  # Support both for backward compatibility
+        return is_intent_name("NextExerciseIntent")(handler_input)
 
     def handle(self, handler_input):
         speech_text, should_end_session = next_exercise(handler_input)
@@ -257,10 +209,9 @@ class NextExerciseIntentHandler(AbstractRequestHandler):
             ).response
 
 class RepeatExerciseIntentHandler(AbstractRequestHandler):
-    """Handler for RepeatExerciseIntent (renamed from RepeatStepIntent)"""
+    """Handler for RepeatExerciseIntent"""
     def can_handle(self, handler_input):
-        return (is_intent_name("RepeatExerciseIntent")(handler_input) or
-                is_intent_name("RepeatStepIntent")(handler_input))  # Support both for backward compatibility
+        return is_intent_name("RepeatExerciseIntent")(handler_input)
 
     def handle(self, handler_input):
         speech_text, should_end_session = repeat_exercise(handler_input)
@@ -1011,9 +962,6 @@ class CatchAllExceptionHandler(AbstractExceptionHandler):
 sb.add_request_handler(LaunchRequestHandler())
 sb.add_request_handler(EndSessionIntentHandler())
 sb.add_request_handler(StartSessionIntentHandler())
-sb.add_request_handler(StartPhysicalTherapyIntentHandler())
-sb.add_request_handler(StartSpeechTherapyIntentHandler())
-sb.add_request_handler(StartCognitiveExerciseIntentHandler())
 sb.add_request_handler(NextExerciseIntentHandler())
 sb.add_request_handler(RepeatExerciseIntentHandler())
 sb.add_request_handler(SkipExerciseIntentHandler())
