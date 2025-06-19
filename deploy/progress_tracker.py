@@ -14,6 +14,7 @@ import datetime
 import json
 import time
 from typing import Dict, Any, Optional, List
+from decimal import Decimal
 from botocore.exceptions import ClientError
 
 # Import configuration
@@ -103,6 +104,8 @@ def update_profile_attribute(user_id: str, key: str, value: Any):
 
         dynamodb = get_dynamodb_resource()
         table = dynamodb.Table(config.DYNAMO_TABLE_NAME)
+        if isinstance(value, float):
+            value = Decimal(str(value))
         table.update_item(
             Key={'user_id': user_id},
             UpdateExpression=f"SET {key} = :v",
