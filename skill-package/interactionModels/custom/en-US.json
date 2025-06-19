@@ -1,347 +1,100 @@
 {
   "interactionModel": {
     "languageModel": {
-      "intents": [
-        {
-          "name": "AMAZON.CancelIntent",
-          "samples": []
-        },
-        {
-          "name": "AMAZON.HelpIntent",
-          "samples": []
-        },
-        {
-          "name": "AMAZON.StopIntent",
-          "samples": []
-        },
-        {
-          "name": "AMAZON.YesIntent",
-          "samples": []
-        },
-        {
-          "name": "AMAZON.NoIntent",
-          "samples": []
-        },
-        {
-          "name": "AMAZON.FallbackIntent",
-          "samples": []
-        },
-        {
-          "slots": [
-            {
-              "name": "exerciseType",
-              "type": "ExerciseType"
-            }
-          ],
-          "name": "StartSessionIntent",
-          "samples": [
-            "begin my {exerciseType} rehab session",
-            "start my {exerciseType} therapy",
-            "I want to do {exerciseType} exercises",
-            "let's do {exerciseType} training",
-            "help me with {exerciseType} rehabilitation",
-            "start a {exerciseType} session",
-            "begin {exerciseType} exercises"
-          ]
-        },
-        {
-          "slots": [],
-          "name": "StartPhysicalTherapyIntent",
-          "samples": [
-            "begin my rehab session",
-            "start my physical therapy exercises",
-            "I want to do mobility training",
-            "let's do walking practice",
-            "help me with my balance exercises",
-            "start physical therapy",
-            "begin physical exercises",
-            "start mobility training",
-            "help me with physical rehabilitation"
-          ]
-        },
-        {
-          "slots": [],
-          "name": "StartSpeechTherapyIntent",
-          "samples": [
-            "I want to practice speaking",
-            "start a speech therapy session",
-            "help me with speech exercises",
-            "let's do speech rehab now",
-            "begin speech therapy",
-            "start speech exercises",
-            "help me with my speech",
-            "I need to practice talking"
-          ]
-        },
-        {
-          "slots": [],
-          "name": "StartCognitiveExerciseIntent",
-          "samples": [
-            "help me with a brain exercise",
-            "start cognitive training",
-            "I want to do a memory exercise",
-            "begin cognitive exercises",
-            "start brain training",
-            "help me with thinking exercises",
-            "let's do mental exercises"
-          ]
-        },
-        {
-          "slots": [],
-          "name": "NextExerciseIntent",
-          "samples": [
-            "next exercise",
-            "I'm ready for the next one",
-            "go to the next step",
-            "what's next",
-            "continue",
-            "move on",
-            "next",
-            "proceed to next exercise"
-          ]
-        },
-        {
-          "slots": [],
-          "name": "RepeatExerciseIntent",
-          "samples": [
-            "repeat that",
-            "say that again",
-            "please repeat the instructions",
-            "I didn't catch that step",
-            "can you repeat that",
-            "what was that again",
-            "repeat the exercise"
-          ]
-        },
-        {
-          "slots": [],
-          "name": "SkipExerciseIntent",
-          "samples": [
-            "skip this exercise",
-            "I can't do this one",
-            "skip to the next",
-            "move past this exercise",
-            "skip this one",
-            "go to the next exercise",
-            "I want to skip"
-          ]
-        },
-        {
-          "slots": [
-            {
-              "name": "direction",
-              "type": "AMAZON.SearchQuery"
-            }
-          ],
-          "name": "AdjustDifficultyIntent",
-          "samples": [
-            "make it {direction}",
-            "this is too {direction} for me",
-            "give me something {direction}",
-            "I need more of a {direction}",
-            "make the exercises {direction}",
-            "I want it to be {direction}",
-            "adjust difficulty to be {direction}"
-          ]
-        },
-        {
-          "slots": [
-            {
-              "name": "level",
-              "type": "DifficultyLevel"
-            }
-          ],
-          "name": "DifficultyFeedbackIntent",
-          "samples": [
-            "it was {level}",
-            "{level}",
-            "that was {level}",
-            "it felt {level}",
-            "that felt {level}",
-            "it's {level}",
-            "that's {level}",
-            "the exercise was {level}",
-            "the exercises are {level}"
-          ]
-        },
-        {
-          "slots": [],
-          "name": "EncouragementIntent",
-          "samples": [
-            "I need encouragement",
-            "say something motivating",
-            "give me a motivational quote",
-            "cheer me up",
-            "motivate me",
-            "I need motivation",
-            "encourage me"
-          ]
-        },
-        {
-          "slots": [],
-          "name": "CheckProgressIntent",
-          "samples": [
-            "how am I doing",
-            "check my rehab progress",
-            "am I improving",
-            "what's my exercise record",
-            "show my progress",
-            "how many sessions have I completed",
-            "what's my streak"
-          ]
-        },
-        {
-          "slots": [
-            {
-              "name": "ReminderTime",
-              "type": "AMAZON.TIME"
-            }
-          ],
-          "name": "SetRehabReminderIntent",
-          "samples": [
-            "remind me to do my exercises every day at {ReminderTime}",
-            "set a daily rehab reminder for {ReminderTime}",
-            "schedule my rehab reminder for weekdays at {ReminderTime}",
-            "set a reminder for {ReminderTime}",
-            "remind me at {ReminderTime}",
-            "create a reminder for {ReminderTime}"
-          ]
-        },
-        {
-          "slots": [],
-          "name": "CancelRehabReminderIntent",
-          "samples": [
-            "cancel my exercise reminder",
-            "remove my rehab reminder",
-            "stop all rehab reminders",
-            "turn off exercise reminders",
-            "cancel my rehab reminders"
-          ]
-        },
-        {
-          "slots": [],
-          "name": "ListRemindersIntent",
-          "samples": [
-            "what reminders do I have",
-            "list my reminders",
-            "list my rehab reminders",
-            "show my rehab reminders",
-            "show my exercise reminders",
-            "what are my scheduled reminders",
-            "tell me about my reminders"
-          ]
-        },
-        {
-          "slots": [],
-          "name": "SessionSummaryIntent",
-          "samples": [
-            "give me a summary",
-            "summarize my session",
-            "where am I in my session",
-            "session summary",
-            "what's my progress in this session"
-          ]
-        },
-        {
-          "slots": [],
-          "name": "EndSessionIntent",
-          "samples": [
-            "end session",
-            "finish my session",
-            "stop the session",
-            "quit session",
-            "I'm done for now",
-            "end rehab",
-            "finish rehab"
-          ]
-        },
-        {
-          "name": "AMAZON.NavigateHomeIntent",
-          "samples": []
-        }
-      ],
+      "invocationName": "rehab buddy",
       "types": [
         {
+          "name": "ExerciseType",
           "values": [
-            {
-              "name": {
-                "synonyms": [
-                  "physical therapy",
-                  "mobility",
-                  "movement",
-                  "motor"
-                ],
-                "value": "physical"
-              }
-            },
-            {
-              "name": {
-                "synonyms": [
-                  "speech therapy",
-                  "talking",
-                  "verbal",
-                  "voice"
-                ],
-                "value": "speech"
-              }
-            },
-            {
-              "name": {
-                "synonyms": [
-                  "brain",
-                  "thinking",
-                  "memory",
-                  "mental"
-                ],
-                "value": "cognitive"
-              }
-            }
-          ],
-          "name": "ExerciseType"
+            { "name": { "value": "physical" , "synonyms": ["physical therapy","mobility","movement","motor"] }},
+            { "name": { "value": "speech"   , "synonyms": ["speech therapy","talking","voice","communication"] }},
+            { "name": { "value": "cognitive", "synonyms": ["cognition","memory","brain","thinking"] }}
+          ]
         },
         {
+          "name": "StrokeExerciseCategory",
           "values": [
-            {
-              "name": {
-                "synonyms": [
-                  "easy",
-                  "simple",
-                  "not difficult",
-                  "manageable",
-                  "doable"
-                ],
-                "value": "comfortable"
-              }
-            },
-            {
-              "name": {
-                "synonyms": [
-                  "a bit hard",
-                  "somewhat difficult",
-                  "a little challenging",
-                  "moderate",
-                  "not too easy"
-                ],
-                "value": "challenging"
-              }
-            },
-            {
-              "name": {
-                "synonyms": [
-                  "too difficult",
-                  "very hard",
-                  "extremely difficult",
-                  "impossible",
-                  "too challenging"
-                ],
-                "value": "too hard"
-              }
-            }
-          ],
-          "name": "DifficultyLevel"
+            { "name": { "value": "upper limb",          "synonyms": ["arm","hand","shoulder"] }},
+            { "name": { "value": "lower limb",          "synonyms": ["leg","foot","ankle"] }},
+            { "name": { "value": "balance",             "synonyms": ["gait","walking","standing"] }},
+            { "name": { "value": "constraint training", "synonyms": ["CIMT","constraint‑induced"] }},
+            { "name": { "value": "mirror therapy",      "synonyms": ["mirror"] }},
+            { "name": { "value": "range of motion",     "synonyms": ["stretching","ROM"] }},
+            { "name": { "value": "strengthening",       "synonyms": ["resistance","weights","band work"] }},
+            { "name": { "value": "speech drills",       "synonyms": ["word finding","communication drills"] }},
+            { "name": { "value": "swallowing",          "synonyms": ["dysphagia","eat","drink"] }},
+            { "name": { "value": "ADL practice",        "synonyms": ["daily living","self‑care"] }}
+          ]
+        },
+        {
+          "name": "BodyArea",
+          "values": [
+            { "name": { "value": "shoulder" }}, { "name": { "value": "hand" }},
+            { "name": { "value": "knee" }},     { "name": { "value": "ankle" }}
+          ]
+        },
+        {
+          "name": "DifficultyLevel",
+          "values": [
+            { "name": { "value": "comfortable", "synonyms": ["easy","doable"] }},
+            { "name": { "value": "challenging", "synonyms": ["moderate","a bit hard"] }},
+            { "name": { "value": "too hard",    "synonyms": ["very hard","impossible"] }}
+          ]
         }
       ],
-      "invocationName": "rehab buddy"
+      "intents": [
+        { "name": "AMAZON.CancelIntent","samples":[] },
+        { "name": "AMAZON.StopIntent","samples":[] },
+        { "name": "AMAZON.HelpIntent","samples":[] },
+        { "name": "AMAZON.FallbackIntent","samples":[] },
+        {
+          "name": "StartSessionIntent",
+          "slots":[
+            { "name":"exerciseType","type":"ExerciseType"},
+            { "name":"strokeCategory","type":"StrokeExerciseCategory"}
+          ],
+          "samples":[
+            "begin my {exerciseType} rehab session",
+            "start {strokeCategory} training",
+            "I want to do {strokeCategory} {exerciseType}",
+            "help me with {strokeCategory}"
+          ]
+        },
+        {
+          "name": "ReportPainIntent",
+          "slots":[ { "name":"body","type":"BodyArea"} ],
+          "samples":[
+            "my {body} hurts", "I feel pain in my {body}", 
+            "this exercise hurts"
+          ]
+        },
+        {
+          "name": "AskWhyIntent",
+          "slots":[],
+          "samples":[
+            "why do I need this exercise", 
+            "what is the benefit of this",
+            "how does this help recovery"
+          ]
+        },
+        {
+          "name": "AskEquipmentIntent",
+          "samples":[
+            "what equipment do I need", 
+            "do I need a resistance band",
+            "what do I need for this exercise"
+          ]
+        },
+        { "name":"AdjustDifficultyIntent","slots":[{"name":"direction","type":"AMAZON.SearchQuery"}],"samples":["make it {direction}","this is too {direction}"]},
+        { "name":"DifficultyFeedbackIntent","slots":[{"name":"level","type":"DifficultyLevel"}],"samples":["it was {level}","that was {level}"]},
+        { "name":"NextExerciseIntent","samples":["next","next exercise"]},
+        { "name":"RepeatExerciseIntent","samples":["repeat that"]},
+        { "name":"SkipExerciseIntent","samples":["skip this"]},
+        { "name":"CheckProgressIntent","samples":["how am I doing"]},
+        { "name":"SetRehabReminderIntent","slots":[{"name":"ReminderTime","type":"AMAZON.TIME"}],"samples":["remind me at {ReminderTime}"]},
+        { "name":"CancelRehabReminderIntent","samples":["cancel reminders"]},
+        { "name":"EndSessionIntent","samples":["end session"]}
+      ]
     }
   }
 }
